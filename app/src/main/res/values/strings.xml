@@ -17,4 +17,5 @@
     <string name="device_detaches">Device detached!</string>
     <string name="no_device_found">No device found!</string>
     <string name="found">found!</string>
+    <string name="title_activity_save_csv">SaveCSVActivity</string>
 </resources>

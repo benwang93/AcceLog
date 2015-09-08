@@ -55,11 +55,14 @@ public class MainActivity extends AppCompatActivity {
     private static final int ARDUINO_MEGA_2560_ADK_R3_USB_PRODUCT_ID = 0x44;
     private static final int ARDUINO_MEGA_2560_ADK_USB_PRODUCT_ID = 0x3F;
 
-    private final static String TAG = "ArduinoCommunicatorActivity";
+    private final static String TAG = "MainActivity";
     private final static boolean DEBUG = false;
 
+    final static String DATA_SAVE = "benwang93.com.accelog.intent.extra.SAVE_DATA";
+
     private Boolean mIsReceiving;
-    private ArrayList<ByteArray> mTransferedDataList = new ArrayList<ByteArray>();
+    private ArrayList<ByteArray> mTransferredDataList = new ArrayList<ByteArray>();
+    private String receivedData = "";
 //    private ArrayAdapter<ByteArray> mDataAdapter;
 
     // UI Elements
@@ -146,7 +149,7 @@ displayMessage(TV_console, "Device found!\n");
         filter.addAction(ArduinoCommunicatorService.DATA_SENT_INTERNAL_INTENT);
         registerReceiver(mReceiver, filter);
 
-//        mDataAdapter = new ArrayAdapter<ByteArray>(this, android.R.layout.simple_list_item_1, mTransferedDataList);
+//        mDataAdapter = new ArrayAdapter<ByteArray>(this, android.R.layout.simple_list_item_1, mTransferredDataList);
 //        setListAdapter(mDataAdapter);
 
         // Grab UI elements
@@ -157,6 +160,7 @@ displayMessage(TV_console, "onCreate() has found textView\n");
 
         final EditText ET_send = (EditText) findViewById(R.id.MainActivity_EditText_Send);
 
+        // Send Button
         findViewById(R.id.MainActivity_Button_Send).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -168,12 +172,26 @@ displayMessage(TV_console, "onCreate() has found textView\n");
             }
         });
 
+        // Save Button
+        findViewById(R.id.MainActivity_Button_Save).setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                Intent saveIntent = new Intent(getApplicationContext(), SaveCSVActivity.class);
+                saveIntent.putExtra(DATA_SAVE, receivedData.getBytes());
+                startActivity(saveIntent);
+
+                // Clear received data buffer
+                receivedData = "";
+            }
+        });
 
         findDevice();
 //DEBUG
 displayMessage(TV_console, "onCreate() finished!\n");
 
     }
+
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -187,6 +205,17 @@ displayMessage(TV_console, "onNewIntent() called\n");
             if (DEBUG) Log.d(TAG, "onNewIntent() " + intent);
             findDevice();
         }
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+
+        // Save data
+
+
+        // Clear string
+//        receivedData = "";
     }
 
     @Override
@@ -223,24 +252,29 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
 
     BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
-        private void handleTransferedData(Intent intent, boolean receiving) {
+        private void handleTransferredData(Intent intent, boolean receiving) {
             if (mIsReceiving == null || mIsReceiving != receiving) {
                 mIsReceiving = receiving;
-                mTransferedDataList.add(new ByteArray());
+                mTransferredDataList.add(new ByteArray());
             }
 
-            final byte[] newTransferedData = intent.getByteArrayExtra(ArduinoCommunicatorService.DATA_EXTRA);
-            if (DEBUG) Log.i(TAG, "data: " + newTransferedData.length + " \"" + new String(newTransferedData) + "\"");
+            final byte[] newTransferredData = intent.getByteArrayExtra(ArduinoCommunicatorService.DATA_EXTRA);
+            if (DEBUG) Log.i(TAG, "data: " + newTransferredData.length + " \"" + new String(newTransferredData) + "\"");
 
-            ByteArray transferedData = mTransferedDataList.get(mTransferedDataList.size() - 1);
-//            transferedData.add(newTransferedData);
-//            mTransferedDataList.set(mTransferedDataList.size() - 1, transferedData);
-//Toast.makeText(getApplicationContext(), "mTransferedDataList.size(): " + mTransferedDataList.size(), Toast.LENGTH_SHORT).show();
+//            ByteArray transferredData = mTransferredDataList.get(mTransferredDataList.size() - 1);
+//            transferredData.add(newTransferredData);
+//            mTransferredDataList.set(mTransferredDataList.size() - 1, transferredData);
+
+//Toast.makeText(getApplicationContext(), "mTransferredDataList.size(): " + mTransferredDataList.size(), Toast.LENGTH_SHORT).show();
 //            mDataAdapter.notifyDataSetChanged();
+
+            // Convert transferred data into string
+            String newTransferredDataString = new String(newTransferredData);
+            receivedData += newTransferredDataString;
 
             // Display new text
             displayMessage(TV_console, receiving ? "R: " : "S: ");
-            displayMessage(TV_console, /*"New message: " +*/ new String(newTransferedData) + "\n");
+            displayMessage(TV_console, /*"New message: " +*/ newTransferredDataString + "\n");
         }
 
         @Override
@@ -253,9 +287,9 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
 
 
             if (ArduinoCommunicatorService.DATA_RECEIVED_INTENT.equals(action)) {
-                handleTransferedData(intent, true);
+                handleTransferredData(intent, true);
             } else if (ArduinoCommunicatorService.DATA_SENT_INTERNAL_INTENT.equals(action)) {
-                handleTransferedData(intent, false);
+                handleTransferredData(intent, false);
             }
         }
     };
