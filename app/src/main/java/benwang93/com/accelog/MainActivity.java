@@ -78,9 +78,9 @@ public class MainActivity extends AppCompatActivity {
 
     private class AccelSample {
         public long time;   // time in milliseconds
-        public int aX;      // acceleration on X axis in Gs
-        public int aY;      // acceleration on Y axis in Gs
-        public int aZ;      // acceleration on Z axis in Gs
+        public double aX;      // acceleration on X axis in Gs
+        public double aY;      // acceleration on Y axis in Gs
+        public double aZ;      // acceleration on Z axis in Gs
     }
 
     // Arraylist for saving all readings
@@ -345,7 +345,56 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
     private void parseForPacket(){
         // Parse for complete packet
         int startIndex = receivedData.indexOf(ACCEL_SOP);
-        int endIndex = receivedData.indexOf(ACCEL_EOP);
-        if (startIndex > endIndex) // then this means...
+        int endIndex = receivedData.indexOf(ACCEL_EOP, startIndex);
+		String currPacket;
+		
+		// Exit if EOP not present
+		if (endIndex < 0 || startIndex < 0) return;
+displayMessage(TV_console, "Packet found: [" + receivedData.substring(startIndex + 1, endIndex)+ "]\n");
+		
+		// Grab packet
+		StringTokenizer packetTokens = StringTokenizer(receivedData.substring(startIndex + 1, endIndex);
+displayMessage(TV_console, "# tokens: " + packetTokens.countTokens() + "\n");
+
+		// Parse packet type
+		char packetType = packetTokens.nextToken();
+displayMessage(TV_console, "packet type: " + packetType + "\n");
+		switch (packetType.charAt(0)){
+			case 'G':					// Acceleration in Gs
+				// Check for correct number of elements (# tokens == 3)
+				if (packetTokens.countTokens() == 3){
+					AccelSample currSample = new AccelSample();
+					currSample.time = calendar.getTimeInMillis();
+					currSample.aX = Double.parseDouble(packetTokens.nextToken());
+					currSample.aX = Double.parseDouble(packetTokens.nextToken());
+					currSample.aX = Double.parseDouble(packetTokens.nextToken());
+					
+					// TODO: Check for data within bounds
+					
+					// Add current sample to array
+					accelSamples.add(currSample);
+					
+					// TODO: Update graph
+					
+				} else {
+displayMessage(TV_console, "Incorrect number of packets!\n");
+				}
+			default:					// Invalid packet type
+displayMessage(TV_console, "Invalid packet type! (" + packetType + ")\n");
+		}
+		
+		// Remove parsed data from buffer
+		receivedData = receivedData.substring(endIndex + 1);
     }
 }
+
+   /*  private class AccelSample {
+        public long time;   // time in milliseconds
+        public int aX;      // acceleration on X axis in Gs
+        public int aY;      // acceleration on Y axis in Gs
+        public int aZ;      // acceleration on Z axis in Gs
+    }
+
+    // Arraylist for saving all readings
+    private ArrayList<AccelSample> accelSamples = new ArrayList<>(0);
+ */

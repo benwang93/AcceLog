@@ -21,6 +21,16 @@
 #include <Adafruit_MMA8451.h>
 #include <Adafruit_Sensor.h>
 
+// Packet definitions
+const char PACKET_START = '{';
+const char PACKET_END   = '}';
+const char PACKET_DELIM = '\t';
+
+const char PACKET_TYPE_ACCEL_G = 'G';
+
+
+
+// Accelerometer object
 Adafruit_MMA8451 mma = Adafruit_MMA8451();
 
 void setup(void) {
@@ -47,7 +57,7 @@ void loop() {
   mma.read();
   
   // Send packet
-  Serial.print("{"); Serial.print(mma.x_g); Serial.print("\t"); Serial.print(mma.y_g); Serial.print("\t"); Serial.print(mma.z_g); Serial.println("}");
+  Serial.print(PACKET_START); Serial.print(PACKET_TYPE_ACCEL_G); Serial.print(mma.x_g); Serial.print(PACKET_DELIM); Serial.print(mma.y_g); Serial.print(PACKET_DELIM); Serial.print(mma.z_g); Serial.println(PACKET_END);
 //  Serial.print("X:\t"); Serial.print(mma.x); 
 //  Serial.print("\tY:\t"); Serial.print(mma.y); 
 //  Serial.print("\tZ:\t"); Serial.print(mma.z); 
