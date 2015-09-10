@@ -45,7 +45,9 @@ void setup(void) {
 void loop() {
   // Read the 'raw' data in 14-bit counts
   mma.read();
-  Serial.print(mma.x); Serial.print("\t"); Serial.print(mma.y); Serial.print("\t"); Serial.println(mma.z);
+  
+  // Send packet
+  Serial.print("{"); Serial.print(mma.x_g); Serial.print("\t"); Serial.print(mma.y_g); Serial.print("\t"); Serial.print(mma.z_g); Serial.println("}");
 //  Serial.print("X:\t"); Serial.print(mma.x); 
 //  Serial.print("\tY:\t"); Serial.print(mma.y); 
 //  Serial.print("\tZ:\t"); Serial.print(mma.z); 

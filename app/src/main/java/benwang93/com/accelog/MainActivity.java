@@ -42,11 +42,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 
 public class MainActivity extends AppCompatActivity {
 
+    // Packet specification
+    private static final char ACCEL_SOP = '{';
+    private static final char ACCEL_DELIM = '\t';
+    private static final char ACCEL_EOP = '}';
+
+    // Arduino communicator variables
     private static final int ARDUINO_USB_VENDOR_ID = 0x2341;
     private static final int ARDUINO_UNO_USB_PRODUCT_ID = 0x01;
     private static final int ARDUINO_MEGA_2560_USB_PRODUCT_ID = 0x10;
@@ -64,6 +71,20 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<ByteArray> mTransferredDataList = new ArrayList<ByteArray>();
     private String receivedData = "";
 //    private ArrayAdapter<ByteArray> mDataAdapter;
+
+    // Data logging elements
+    // Calendar object to get time
+    private Calendar calendar = Calendar.getInstance();
+
+    private class AccelSample {
+        public long time;   // time in milliseconds
+        public int aX;      // acceleration on X axis in Gs
+        public int aY;      // acceleration on Y axis in Gs
+        public int aZ;      // acceleration on Z axis in Gs
+    }
+
+    // Arraylist for saving all readings
+    private ArrayList<AccelSample> accelSamples = new ArrayList<>(0);
 
     // UI Elements
     TextView TV_console;
@@ -272,6 +293,10 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
             String newTransferredDataString = new String(newTransferredData);
             receivedData += newTransferredDataString;
 
+            // Receive and parse packet
+            parseForPacket();
+
+
             // Display new text
             displayMessage(TV_console, receiving ? "R: " : "S: ");
             displayMessage(TV_console, /*"New message: " +*/ newTransferredDataString + "\n");
@@ -315,5 +340,12 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
             textView.scrollTo(0, scrollAmount);
         else
             textView.scrollTo(0, 0);
+    }
+
+    private void parseForPacket(){
+        // Parse for complete packet
+        int startIndex = receivedData.indexOf(ACCEL_SOP);
+        int endIndex = receivedData.indexOf(ACCEL_EOP);
+        if (startIndex > endIndex) // then this means...
     }
 }
