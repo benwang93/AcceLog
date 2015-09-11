@@ -12,10 +12,11 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.StringTokenizer;
 
 public class SaveCSVActivity extends AppCompatActivity {
 
-    private static final String FILENAME = "AcceLog_out.txt";
+    private static final String FILENAME = "AcceLog/AcceLog_out.csv";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +39,28 @@ public class SaveCSVActivity extends AppCompatActivity {
 
                 // Open file
                 try {
-                    file = new File(Environment.getExternalStoragePublicDirectory(
-                            Environment.DIRECTORY_DOCUMENTS), ET_filename.getText().toString());
+                    // Use Documents directory
+//                    file = new File(Environment.getExternalStoragePublicDirectory(
+//                            Environment.DIRECTORY_DOCUMENTS), ET_filename.getText().toString());
+
+                    // Use AcceLog folder
+                    StringTokenizer filenameTokens = new StringTokenizer(ET_filename.getText().toString(), "/");
+//                    File dir = new File(Environment.getExternalStorageDirectory(), ET_dirname.getText().toString());
+
+                    // Assemble directory name
+                    String directories = "";
+                    while (filenameTokens.countTokens() > 1) {
+                        directories = directories.concat("/" + filenameTokens.nextToken());
+                    }
+                    File dir = new File(Environment.getExternalStorageDirectory(), directories);
+                    TV_error.append("Directory: " + dir.getAbsolutePath() + "\n");
+                    dir.mkdirs();
+//                    file = new File(dir, ET_filename.getText().toString());
+
+                    // Create file
+                    file = new File(dir, filenameTokens.nextToken());
+                    TV_error.append("Filename: " + file.getName() + "\n");
+
                     getApplicationContext().getExternalFilesDir(
                             Environment.DIRECTORY_DOCUMENTS).mkdirs();
 //                    file.mkdirs();
@@ -51,18 +72,34 @@ public class SaveCSVActivity extends AppCompatActivity {
                 // Save data
                 try {
                     FileOutputStream out = new FileOutputStream(file);
-                    out.write(getDataToWrite());
+
+                    // Write column headers
+                    out.write(new String("Time (ms),accel_X (G),accel_Y (G),accel_Z (G)\n").getBytes());
+
+                    // Write array out to .csv file
+                    for (AccelSample sample : MainActivity.accelSamples){
+                        try {
+                            String data = sample.time + "," + sample.aX + "," + sample.aY +
+                                    "," + sample.aZ + "\n";
+                            out.write(data.getBytes());
+                        } catch (Exception e){
+                            TV_error.append(e.getMessage()+"\n");
+                        }
+                    }
+
+                    // Complete file write
+//                    out.write(getDataToWrite());
                     out.flush();
                     out.close();
                 } catch (Exception e){
                     Toast.makeText(getApplicationContext(), "File save failed.", Toast.LENGTH_SHORT).show();
 //                    Toast.makeText(getApplicationContext(), e.getStackTrace().toString(), Toast.LENGTH_SHORT).show();
-                    TV_error.setText(e.getMessage());
+                    TV_error.append(e.getMessage() + "\n");
                     return;
                 }
 
-                String successfulSaveMessage = "Save successful to " + file.getAbsolutePath();
-                TV_error.setText(successfulSaveMessage);
+                String successfulSaveMessage = "Save successful to " + file.getAbsolutePath() + "\n";
+                TV_error.append(successfulSaveMessage);
                 Toast.makeText(getApplicationContext(), successfulSaveMessage, Toast.LENGTH_SHORT).show();
             }
         });

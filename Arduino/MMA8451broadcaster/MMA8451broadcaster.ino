@@ -57,7 +57,7 @@ void loop() {
   mma.read();
   
   // Send packet
-  Serial.print(PACKET_START); Serial.print(PACKET_TYPE_ACCEL_G); Serial.print(mma.x_g); Serial.print(PACKET_DELIM); Serial.print(mma.y_g); Serial.print(PACKET_DELIM); Serial.print(mma.z_g); Serial.println(PACKET_END);
+  Serial.print(PACKET_START); Serial.print(PACKET_TYPE_ACCEL_G); Serial.print(PACKET_DELIM); Serial.print(mma.x_g); Serial.print(PACKET_DELIM); Serial.print(mma.y_g); Serial.print(PACKET_DELIM); Serial.print(mma.z_g); Serial.println(PACKET_END);
 //  Serial.print("X:\t"); Serial.print(mma.x); 
 //  Serial.print("\tY:\t"); Serial.print(mma.y); 
 //  Serial.print("\tZ:\t"); Serial.print(mma.z); 

@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -74,17 +75,10 @@ public class MainActivity extends AppCompatActivity {
 
     // Data logging elements
     // Calendar object to get time
-    private Calendar calendar = Calendar.getInstance();
-
-    private class AccelSample {
-        public long time;   // time in milliseconds
-        public double aX;      // acceleration on X axis in Gs
-        public double aY;      // acceleration on Y axis in Gs
-        public double aZ;      // acceleration on Z axis in Gs
-    }
+//    private Calendar calendar = Calendar.getInstance();
 
     // Arraylist for saving all readings
-    private ArrayList<AccelSample> accelSamples = new ArrayList<>(0);
+    public static ArrayList<AccelSample> accelSamples = new ArrayList<>(0);
 
     // UI Elements
     TextView TV_console;
@@ -298,8 +292,9 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
 
 
             // Display new text
-            displayMessage(TV_console, receiving ? "R: " : "S: ");
-            displayMessage(TV_console, /*"New message: " +*/ newTransferredDataString + "\n");
+//            displayMessage(TV_console, receiving ? "R: " : "S: ");
+//            displayMessage(TV_console, /*"New message: " +*/ newTransferredDataString + "\n");
+            if (!receiving) displayMessage(TV_console, "S: " + newTransferredDataString + "\n");
         }
 
         @Override
@@ -351,23 +346,23 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
 		// Exit if EOP not present
 		if (endIndex < 0 || startIndex < 0) return;
 displayMessage(TV_console, "Packet found: [" + receivedData.substring(startIndex + 1, endIndex)+ "]\n");
-		
+
 		// Grab packet
-		StringTokenizer packetTokens = StringTokenizer(receivedData.substring(startIndex + 1, endIndex);
-displayMessage(TV_console, "# tokens: " + packetTokens.countTokens() + "\n");
+		StringTokenizer packetTokens = new StringTokenizer(receivedData.substring(startIndex + 1, endIndex));
+//displayMessage(TV_console, "# tokens: " + packetTokens.countTokens() + "\n");
 
 		// Parse packet type
-		char packetType = packetTokens.nextToken();
-displayMessage(TV_console, "packet type: " + packetType + "\n");
+		String packetType = packetTokens.nextToken();
+//displayMessage(TV_console, "packet type: " + packetType + "\n");
 		switch (packetType.charAt(0)){
 			case 'G':					// Acceleration in Gs
 				// Check for correct number of elements (# tokens == 3)
 				if (packetTokens.countTokens() == 3){
 					AccelSample currSample = new AccelSample();
-					currSample.time = calendar.getTimeInMillis();
+					currSample.time = Calendar.getInstance().getTimeInMillis();
 					currSample.aX = Double.parseDouble(packetTokens.nextToken());
-					currSample.aX = Double.parseDouble(packetTokens.nextToken());
-					currSample.aX = Double.parseDouble(packetTokens.nextToken());
+					currSample.aY = Double.parseDouble(packetTokens.nextToken());
+					currSample.aZ = Double.parseDouble(packetTokens.nextToken());
 					
 					// TODO: Check for data within bounds
 					
@@ -375,7 +370,9 @@ displayMessage(TV_console, "packet type: " + packetType + "\n");
 					accelSamples.add(currSample);
 					
 					// TODO: Update graph
-					
+
+
+                    break;
 				} else {
 displayMessage(TV_console, "Incorrect number of packets!\n");
 				}
