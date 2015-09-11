@@ -12,11 +12,13 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Date;
 import java.util.StringTokenizer;
 
 public class SaveCSVActivity extends AppCompatActivity {
 
     private static final String FILENAME = "AcceLog/AcceLog_out.csv";
+    private static final String CSV_HEADER = "Timestampd,accel_X (G),accel_Y (G),accel_Z (G)\n";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,12 +76,12 @@ public class SaveCSVActivity extends AppCompatActivity {
                     FileOutputStream out = new FileOutputStream(file);
 
                     // Write column headers
-                    out.write(new String("Time (ms),accel_X (G),accel_Y (G),accel_Z (G)\n").getBytes());
+                    out.write(CSV_HEADER.getBytes());
 
                     // Write array out to .csv file
                     for (AccelSample sample : MainActivity.accelSamples){
                         try {
-                            String data = sample.time + "," + sample.aX + "," + sample.aY +
+                            String data = MainActivity.sdf.format(new Date(sample.time)) + "," + sample.aX + "," + sample.aY +
                                     "," + sample.aZ + "\n";
                             out.write(data.getBytes());
                         } catch (Exception e){

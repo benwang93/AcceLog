@@ -14,7 +14,7 @@
     <TextView
         android:id="@+id/MainActivity_TextView_Console"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:scrollbars="vertical"
         android:textColor="@color/Green"
         android:background="@color/Black"

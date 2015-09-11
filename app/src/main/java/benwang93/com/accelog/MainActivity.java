@@ -47,8 +47,10 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -78,14 +80,12 @@ public class MainActivity extends AppCompatActivity {
     private Boolean mIsReceiving;
     private ArrayList<ByteArray> mTransferredDataList = new ArrayList<ByteArray>();
     private String receivedData = "";
-//    private ArrayAdapter<ByteArray> mDataAdapter;
-
-    // Data logging elements
-    // Calendar object to get time
-//    private Calendar calendar = Calendar.getInstance();
 
     // Arraylist for saving all readings
     public static ArrayList<AccelSample> accelSamples = new ArrayList<>(0);
+
+    // Simple date formatter for X-axis values on chart
+    public static SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
     // UI Elements
     TextView TV_console;
@@ -148,12 +148,13 @@ displayMessage(TV_console, "findDevice()\n");
 
         if (usbDevice == null) {
             if (DEBUG) Log.i(TAG, "No device found!");
-displayMessage(TV_console, "No device found\n");
+            displayMessage(TV_console, "No device found\n");
             Toast.makeText(getBaseContext(), getString(R.string.no_device_found), Toast.LENGTH_LONG).show();
         } else {
             if (DEBUG) Log.i(TAG, "Device found!");
 
-displayMessage(TV_console, "Device found!\n");
+            displayMessage(TV_console, "Device found!\n");
+
             Intent startIntent = new Intent(getApplicationContext(), ArduinoCommunicatorService.class);
             PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 0, startIntent, 0);
             usbManager.requestPermission(usbDevice, pendingIntent);
@@ -172,14 +173,9 @@ displayMessage(TV_console, "Device found!\n");
         filter.addAction(ArduinoCommunicatorService.DATA_SENT_INTERNAL_INTENT);
         registerReceiver(mReceiver, filter);
 
-//        mDataAdapter = new ArrayAdapter<ByteArray>(this, android.R.layout.simple_list_item_1, mTransferredDataList);
-//        setListAdapter(mDataAdapter);
-
         // Grab UI elements
         TV_console = (TextView) findViewById(R.id.MainActivity_TextView_Console);
         TV_console.setMovementMethod(new ScrollingMovementMethod());
-//DEBUG
-displayMessage(TV_console, "onCreate() has found textView\n");
 
         final EditText ET_send = (EditText) findViewById(R.id.MainActivity_EditText_Send);
 
@@ -189,7 +185,6 @@ displayMessage(TV_console, "onCreate() has found textView\n");
             public void onClick(View v) {
                 Intent intent = new Intent(ArduinoCommunicatorService.SEND_DATA_INTENT);
                 intent.putExtra(ArduinoCommunicatorService.DATA_EXTRA, ET_send.getText().toString().getBytes());
-//displayMessage(TV_console, "Sending: " + ET_send.getText().toString().getBytes() + "\n");
                 sendBroadcast(intent);
                 ET_send.setText("");
             }
@@ -232,7 +227,7 @@ displayMessage(TV_console, "onCreate() has found textView\n");
         LC_oscope.setPinchZoom(true);
 
         // set an alternative background color
-        LC_oscope.setBackgroundColor(Color.LTGRAY);
+        LC_oscope.setBackgroundColor(Color.DKGRAY);
 
         ArrayList<String> xVals = new ArrayList<String>();
         ArrayList<LineDataSet> dataSets = new ArrayList<LineDataSet>();
@@ -241,8 +236,7 @@ displayMessage(TV_console, "onCreate() has found textView\n");
         data.setValueTextColor(Color.WHITE);
 
         // add empty data
-        LC_oscope.setData(data);
-
+        initData(3);
 
         // Search for connected USB device
         findDevice();
@@ -320,13 +314,6 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
             final byte[] newTransferredData = intent.getByteArrayExtra(ArduinoCommunicatorService.DATA_EXTRA);
             if (DEBUG) Log.i(TAG, "data: " + newTransferredData.length + " \"" + new String(newTransferredData) + "\"");
 
-//            ByteArray transferredData = mTransferredDataList.get(mTransferredDataList.size() - 1);
-//            transferredData.add(newTransferredData);
-//            mTransferredDataList.set(mTransferredDataList.size() - 1, transferredData);
-
-//Toast.makeText(getApplicationContext(), "mTransferredDataList.size(): " + mTransferredDataList.size(), Toast.LENGTH_SHORT).show();
-//            mDataAdapter.notifyDataSetChanged();
-
             // Convert transferred data into string
             String newTransferredDataString = new String(newTransferredData);
             receivedData += newTransferredDataString;
@@ -336,8 +323,7 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
 
 
             // Display new text
-//            displayMessage(TV_console, receiving ? "R: " : "S: ");
-//            displayMessage(TV_console, /*"New message: " +*/ newTransferredDataString + "\n");
+//            displayMessage(TV_console, receiving ? "R: " : "S: "); displayMessage(TV_console, /*"New message: " +*/ newTransferredDataString + "\n");
             if (!receiving) displayMessage(TV_console, "S: " + newTransferredDataString + "\n");
         }
 
@@ -345,10 +331,6 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (DEBUG) Log.d(TAG, "onReceive() " + action);
-
-//DEBUG
-//displayMessage(TV_console, "Broadcast Receiver has received" + action + "\n");
-
 
             if (ArduinoCommunicatorService.DATA_RECEIVED_INTENT.equals(action)) {
                 handleTransferredData(intent, true);
@@ -393,11 +375,9 @@ displayMessage(TV_console, "Packet found: [" + receivedData.substring(startIndex
 
 		// Grab packet
 		StringTokenizer packetTokens = new StringTokenizer(receivedData.substring(startIndex + 1, endIndex));
-//displayMessage(TV_console, "# tokens: " + packetTokens.countTokens() + "\n");
 
 		// Parse packet type
 		String packetType = packetTokens.nextToken();
-//displayMessage(TV_console, "packet type: " + packetType + "\n");
 		switch (packetType.charAt(0)){
 			case 'G':					// Acceleration in Gs
 				// Check for correct number of elements (# tokens == 3)
@@ -418,10 +398,10 @@ displayMessage(TV_console, "Packet found: [" + receivedData.substring(startIndex
 
                     break;
 				} else {
-displayMessage(TV_console, "Incorrect number of packets!\n");
+                    displayMessage(TV_console, "Incorrect number of packets!\n");
 				}
 			default:					// Invalid packet type
-displayMessage(TV_console, "Invalid packet type! (" + packetType + ")\n");
+                displayMessage(TV_console, "Invalid packet type! (" + packetType + ")\n");
 		}
 		
 		// Remove parsed data from buffer
@@ -429,45 +409,46 @@ displayMessage(TV_console, "Invalid packet type! (" + packetType + ")\n");
     }
 
     private void updateChart(AccelSample sample){
-        try {
-            LineData data = LC_oscope.getData();
+        LineData data = LC_oscope.getData();
 
-            // Add new x value
-            //data.addXValue(Calendar.getInstance().getTime().toString());
+        // Add new x value
+        data.addXValue(sdf.format(new Date(sample.time)));
 
-            // Add data points
-            addEntry(data, data.getDataSetByIndex(0), sample.aX);
-            addEntry(data, data.getDataSetByIndex(1), sample.aY);
-            addEntry(data, data.getDataSetByIndex(2), sample.aZ);
+        // Set new data
+        data.addEntry(new Entry((float)sample.aX, data.getDataSetByIndex(0).getEntryCount()), 0);
+        data.addEntry(new Entry((float)sample.aY, data.getDataSetByIndex(1).getEntryCount()), 1);
+        data.addEntry(new Entry((float) sample.aZ, data.getDataSetByIndex(2).getEntryCount()), 2);
 
-            // let the chart know it's data has changed
-            LC_oscope.notifyDataSetChanged();
+        LC_oscope.notifyDataSetChanged();
 
-            // limit the number of visible entries
-//            LC_oscope.setVisibleXRangeMaximum(120);
-            // LC_oscope.setVisibleYRange(30, AxisDependency.LEFT);
+        // limit the number of visible entries
+        LC_oscope.setVisibleXRangeMaximum(120);
 
-            // move to the latest entry
-//            LC_oscope.moveViewToX(data.getXValCount() - 121);
-            LC_oscope.invalidate();
-        } catch (Exception e){
-            displayMessage(TV_console, e.getMessage());
-        }
+        // move to the latest entry
+        LC_oscope.moveViewToX(data.getXValCount() - 121);
     }
 
-    private void addEntry(LineData data, LineDataSet set, double val){
-        // Add data point
-        data.addEntry(new Entry((float)val, set.getEntryCount()), 0);
+    void initData(int numSets){
+        ArrayList<String> xVals = new ArrayList<String>();
+        ArrayList<LineDataSet> dataSets = new ArrayList<>();
+        for (int setNum = 0; setNum < numSets; setNum++){
+            LineDataSet set = new LineDataSet(new ArrayList<Entry>(), "Dataset "+setNum);
+//            set.setAxisDependency(YAxis.AxisDependency.RIGHT);
+//            set.setColor(Color.GREEN);
+//            set.setCircleColor(Color.WHITE);
+//            set.setLineWidth(2f);
+//            set.setCircleSize(3f);
+//            set.setFillAlpha(65);
+//            set.setFillColor(Color.GREEN);
+//            set.setDrawCircleHole(false);
+//            set.setHighLightColor(Color.rgb(244, 117, 117));
+            dataSets.add(set);
+        }
+
+        LineData data = new LineData(xVals, dataSets);
+        data.setValueTextColor(Color.WHITE);
+        data.setValueTextSize(9f);
+
+        LC_oscope.setData(data);
     }
 }
-
-   /*  private class AccelSample {
-        public long time;   // time in milliseconds
-        public int aX;      // acceleration on X axis in Gs
-        public int aY;      // acceleration on Y axis in Gs
-        public int aZ;      // acceleration on Z axis in Gs
-    }
-
-    // Arraylist for saving all readings
-    private ArrayList<AccelSample> accelSamples = new ArrayList<>(0);
- */
