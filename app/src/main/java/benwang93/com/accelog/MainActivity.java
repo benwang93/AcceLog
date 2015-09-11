@@ -85,7 +85,8 @@ public class MainActivity extends AppCompatActivity {
     public static ArrayList<AccelSample> accelSamples = new ArrayList<>(0);
 
     // Simple date formatter for X-axis values on chart
-    public static SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    public static Date startTime = Calendar.getInstance().getTime();
+    public static SimpleDateFormat sdf_graph = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
     // UI Elements
     TextView TV_console;
@@ -412,7 +413,7 @@ displayMessage(TV_console, "Packet found: [" + receivedData.substring(startIndex
         LineData data = LC_oscope.getData();
 
         // Add new x value
-        data.addXValue(sdf.format(new Date(sample.time)));
+        data.addXValue(sdf_graph.format(new Date(sample.time)));
 
         // Set new data
         data.addEntry(new Entry((float)sample.aX, data.getDataSetByIndex(0).getEntryCount()), 0);

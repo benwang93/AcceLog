@@ -12,13 +12,18 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.StringTokenizer;
 
 public class SaveCSVActivity extends AppCompatActivity {
 
-    private static final String FILENAME = "AcceLog/AcceLog_out.csv";
-    private static final String CSV_HEADER = "Timestampd,accel_X (G),accel_Y (G),accel_Z (G)\n";
+    private static final String FILENAME_BASE = "AcceLog/AcceLog_out_";
+    private static final String FILENAME_EXTENSION = ".csv";
+    private static final String CSV_HEADER = "Timestamp,accel_X (G),accel_Y (G),accel_Z (G)\n";
+
+    static SimpleDateFormat sdf_filename = new SimpleDateFormat("yyyyMMd-HHmmss");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +32,7 @@ public class SaveCSVActivity extends AppCompatActivity {
 
         // Edit text for filename
         final EditText ET_filename = (EditText) findViewById(R.id.SaveCSVActivity_EditText_filename);
-        ET_filename.setText(FILENAME);
+        ET_filename.setText(FILENAME_BASE + sdf_filename.format(MainActivity.startTime) + FILENAME_EXTENSION);
 
         // TextView for errors
         final TextView TV_error = (TextView) findViewById(R.id.SaveCSVActivity_TextView_Error);
@@ -81,7 +86,7 @@ public class SaveCSVActivity extends AppCompatActivity {
                     // Write array out to .csv file
                     for (AccelSample sample : MainActivity.accelSamples){
                         try {
-                            String data = MainActivity.sdf.format(new Date(sample.time)) + "," + sample.aX + "," + sample.aY +
+                            String data = MainActivity.sdf_graph.format(new Date(sample.time)) + "," + sample.aX + "," + sample.aY +
                                     "," + sample.aZ + "\n";
                             out.write(data.getBytes());
                         } catch (Exception e){
