@@ -27,6 +27,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.net.Uri;
@@ -42,11 +43,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 
 public class MainActivity extends AppCompatActivity {
@@ -84,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
     // UI Elements
     TextView TV_console;
-    LineChart LC_oscope = (LineChart) findViewById(R.id.MainActivity_LineChart_Oscope);
+    LineChart LC_oscope;
 
     private void findDevice() {
 //DEBUG
@@ -204,6 +209,42 @@ displayMessage(TV_console, "onCreate() has found textView\n");
             }
         });
 
+
+        // Configure chart
+        LC_oscope = (LineChart) findViewById(R.id.MainActivity_LineChart_Oscope);
+        
+        // no description text
+        LC_oscope.setDescription("");
+        LC_oscope.setNoDataTextDescription("Please connect accelerometer sensor to log data");
+
+        // enable value highlighting
+        LC_oscope.setHighlightEnabled(true);
+
+        // enable touch gestures
+        LC_oscope.setTouchEnabled(true);
+
+        // enable scaling and dragging
+        LC_oscope.setDragEnabled(true);
+        LC_oscope.setScaleEnabled(true);
+        LC_oscope.setDrawGridBackground(false);
+
+        // if disabled, scaling can be done on x- and y-axis separately
+        LC_oscope.setPinchZoom(true);
+
+        // set an alternative background color
+        LC_oscope.setBackgroundColor(Color.LTGRAY);
+
+        ArrayList<String> xVals = new ArrayList<String>();
+        ArrayList<LineDataSet> dataSets = new ArrayList<LineDataSet>();
+        for (int j = 0; j < 3; j++) dataSets.add(new LineDataSet(new ArrayList<Entry>(), "DataSet " + (j + 1)));
+        LineData data = new LineData(xVals, dataSets);
+        data.setValueTextColor(Color.WHITE);
+
+        // add empty data
+        LC_oscope.setData(data);
+
+
+        // Search for connected USB device
         findDevice();
 //DEBUG
 displayMessage(TV_console, "onCreate() finished!\n");
@@ -348,7 +389,7 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
 		
 		// Exit if EOP not present
 		if (endIndex < 0 || startIndex < 0) return;
-displayMessage(TV_console, "Packet found: [" + receivedData.substring(startIndex + 1, endIndex)+ "]\n");
+displayMessage(TV_console, "Packet found: [" + receivedData.substring(startIndex + 1, endIndex) + "]\n");
 
 		// Grab packet
 		StringTokenizer packetTokens = new StringTokenizer(receivedData.substring(startIndex + 1, endIndex));
@@ -373,7 +414,7 @@ displayMessage(TV_console, "Packet found: [" + receivedData.substring(startIndex
 					accelSamples.add(currSample);
 					
 					// TODO: Update graph
-
+                    updateChart(currSample);
 
                     break;
 				} else {
@@ -385,6 +426,38 @@ displayMessage(TV_console, "Invalid packet type! (" + packetType + ")\n");
 		
 		// Remove parsed data from buffer
 		receivedData = receivedData.substring(endIndex + 1);
+    }
+
+    private void updateChart(AccelSample sample){
+        try {
+            LineData data = LC_oscope.getData();
+
+            // Add new x value
+            //data.addXValue(Calendar.getInstance().getTime().toString());
+
+            // Add data points
+            addEntry(data, data.getDataSetByIndex(0), sample.aX);
+            addEntry(data, data.getDataSetByIndex(1), sample.aY);
+            addEntry(data, data.getDataSetByIndex(2), sample.aZ);
+
+            // let the chart know it's data has changed
+            LC_oscope.notifyDataSetChanged();
+
+            // limit the number of visible entries
+//            LC_oscope.setVisibleXRangeMaximum(120);
+            // LC_oscope.setVisibleYRange(30, AxisDependency.LEFT);
+
+            // move to the latest entry
+//            LC_oscope.moveViewToX(data.getXValCount() - 121);
+            LC_oscope.invalidate();
+        } catch (Exception e){
+            displayMessage(TV_console, e.getMessage());
+        }
+    }
+
+    private void addEntry(LineData data, LineDataSet set, double val){
+        // Add data point
+        data.addEntry(new Entry((float)val, set.getEntryCount()), 0);
     }
 }
 
