@@ -5,6 +5,12 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/MainActivity_LineChart_Oscope"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"/>
+
     <TextView
         android:id="@+id/MainActivity_TextView_Console"
         android:layout_width="match_parent"

@@ -41,6 +41,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.mikephil.charting.charts.LineChart;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -82,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
     // UI Elements
     TextView TV_console;
+    LineChart LC_oscope = (LineChart) findViewById(R.id.MainActivity_LineChart_Oscope);
 
     private void findDevice() {
 //DEBUG
