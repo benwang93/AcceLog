@@ -70,7 +70,13 @@ public class SaveCSVActivity extends AppCompatActivity {
 
                     getApplicationContext().getExternalFilesDir(
                             Environment.DIRECTORY_DOCUMENTS).mkdirs();
-//                    file.mkdirs();
+
+                    // Don't continue if file exists
+                    if (file.exists()){
+                        Toast.makeText(getApplicationContext(), "Error saving: File exists.", Toast.LENGTH_SHORT).show();
+                        TV_error.append("Error saving: File exists.");
+                        return;
+                    }
                 } catch (Exception e){
                     Toast.makeText(getApplicationContext(), "File open failed.", Toast.LENGTH_SHORT).show();
                     return;

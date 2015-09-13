@@ -28,6 +28,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.net.Uri;
@@ -43,6 +44,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -62,6 +64,10 @@ public class MainActivity extends AppCompatActivity {
     private static final char ACCEL_SOP = '{';
     private static final char ACCEL_DELIM = '\t';
     private static final char ACCEL_EOP = '}';
+
+    // Chart specifications
+    private static final float AXIS_MIN = -2f;
+    private static final float AXIS_MAX = 2f;
 
     // Arduino communicator variables
     private static final int ARDUINO_USB_VENDOR_ID = 0x2341;
@@ -152,9 +158,12 @@ displayMessage(TV_console, "findDevice()\n");
             displayMessage(TV_console, "No device found\n");
             Toast.makeText(getBaseContext(), getString(R.string.no_device_found), Toast.LENGTH_LONG).show();
         } else {
+            // Display message
             if (DEBUG) Log.i(TAG, "Device found!");
-
             displayMessage(TV_console, "Device found!\n");
+
+            // Save new start time
+            startTime = Calendar.getInstance().getTime();
 
             Intent startIntent = new Intent(getApplicationContext(), ArduinoCommunicatorService.class);
             PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 0, startIntent, 0);
@@ -229,6 +238,17 @@ displayMessage(TV_console, "findDevice()\n");
 
         // set an alternative background color
         LC_oscope.setBackgroundColor(Color.DKGRAY);
+
+        // Set axes
+        YAxis leftAxis = LC_oscope.getAxisLeft();
+        leftAxis.setAxisMaxValue(AXIS_MAX);
+        leftAxis.setAxisMinValue(AXIS_MIN);
+        leftAxis.setStartAtZero(false);
+
+        YAxis rightAxis = LC_oscope.getAxisRight();
+        rightAxis.setAxisMaxValue(AXIS_MAX);
+        rightAxis.setAxisMinValue(AXIS_MIN);
+        rightAxis.setStartAtZero(false);
 
         ArrayList<String> xVals = new ArrayList<String>();
         ArrayList<LineDataSet> dataSets = new ArrayList<LineDataSet>();
@@ -369,7 +389,7 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
         int startIndex = receivedData.indexOf(ACCEL_SOP);
         int endIndex = receivedData.indexOf(ACCEL_EOP, startIndex);
 		String currPacket;
-		
+
 		// Exit if EOP not present
 		if (endIndex < 0 || startIndex < 0) return;
 displayMessage(TV_console, "Packet found: [" + receivedData.substring(startIndex + 1, endIndex) + "]\n");
