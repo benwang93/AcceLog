@@ -65,10 +65,6 @@ public class MainActivity extends AppCompatActivity {
     private static final char ACCEL_DELIM = '\t';
     private static final char ACCEL_EOP = '}';
 
-    // Chart specifications
-    private static final float AXIS_MIN = -2f;
-    private static final float AXIS_MAX = 2f;
-
     // Arduino communicator variables
     private static final int ARDUINO_USB_VENDOR_ID = 0x2341;
     private static final int ARDUINO_UNO_USB_PRODUCT_ID = 0x01;
@@ -97,6 +93,13 @@ public class MainActivity extends AppCompatActivity {
     // UI Elements
     TextView TV_console;
     LineChart LC_oscope;
+
+    // Chart specifications
+    private static final float AXIS_MIN = -2f;
+    private static final float AXIS_MAX = 2f;
+
+    String[] CHART_NAMES = {"X Axis", "Y Axis", "Z Axis"};
+    int[] CHART_COLORS = {Color.BLUE, Color.GREEN, Color.RED};
 
     private void findDevice() {
 //DEBUG
@@ -453,9 +456,9 @@ displayMessage(TV_console, "Packet found: [" + receivedData.substring(startIndex
         ArrayList<String> xVals = new ArrayList<String>();
         ArrayList<LineDataSet> dataSets = new ArrayList<>();
         for (int setNum = 0; setNum < numSets; setNum++){
-            LineDataSet set = new LineDataSet(new ArrayList<Entry>(), "Dataset "+setNum);
-//            set.setAxisDependency(YAxis.AxisDependency.RIGHT);
-//            set.setColor(Color.GREEN);
+            LineDataSet set = new LineDataSet(new ArrayList<Entry>(), CHART_NAMES[setNum]);
+            set.setAxisDependency(YAxis.AxisDependency.LEFT);
+            set.setColor(CHART_COLORS[setNum]);
 //            set.setCircleColor(Color.WHITE);
 //            set.setLineWidth(2f);
 //            set.setCircleSize(3f);
