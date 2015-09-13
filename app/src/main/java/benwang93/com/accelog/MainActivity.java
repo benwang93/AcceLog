@@ -459,9 +459,9 @@ displayMessage(TV_console, "Packet found: [" + receivedData.substring(startIndex
             LineDataSet set = new LineDataSet(new ArrayList<Entry>(), CHART_NAMES[setNum]);
             set.setAxisDependency(YAxis.AxisDependency.LEFT);
             set.setColor(CHART_COLORS[setNum]);
-//            set.setCircleColor(Color.WHITE);
+            set.setCircleColor(CHART_COLORS[setNum]);
 //            set.setLineWidth(2f);
-//            set.setCircleSize(3f);
+            set.setCircleSize(0);
 //            set.setFillAlpha(65);
 //            set.setFillColor(Color.GREEN);
 //            set.setDrawCircleHole(false);
