@@ -39,6 +39,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -60,6 +62,9 @@ import java.util.StringTokenizer;
 
 public class MainActivity extends AppCompatActivity {
 
+    // Debug mode?
+    public static final boolean DEBUG = false;
+
     // Packet specification
     private static final char ACCEL_SOP = '{';
     private static final char ACCEL_DELIM = '\t';
@@ -75,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int ARDUINO_MEGA_2560_ADK_USB_PRODUCT_ID = 0x3F;
 
     private final static String TAG = "MainActivity";
-    private final static boolean DEBUG = false;
 
     final static String DATA_SAVE = "benwang93.com.accelog.intent.extra.SAVE_DATA";
 
@@ -93,6 +97,9 @@ public class MainActivity extends AppCompatActivity {
     // UI Elements
     TextView TV_console;
     LineChart LC_oscope;
+    Button Btn_startStop;
+
+    boolean recordingIsStarted = false;
 
     // Chart specifications
     private static final float AXIS_MIN = -2f;
@@ -217,6 +224,23 @@ displayMessage(TV_console, "findDevice()\n");
             }
         });
 
+        // Start recording button
+        Btn_startStop = (Button) findViewById(R.id.MainActivity_Button_StartStop);
+        Btn_startStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Toggle recording status
+                recordingIsStarted = !recordingIsStarted;
+
+                // Set new button text
+                Btn_startStop.setText(recordingIsStarted ?
+                        R.string.MainActivity_Button_StartStop_Stop :
+                        R.string.MainActivity_Button_StartStop_Start);
+            }
+        });
+
+        // Set focus off of EditText
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         // Configure chart
         LC_oscope = (LineChart) findViewById(R.id.MainActivity_LineChart_Oscope);
@@ -393,9 +417,20 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
         int endIndex = receivedData.indexOf(ACCEL_EOP, startIndex);
 		String currPacket;
 
+        // Exit if not recording
+        if (!recordingIsStarted){
+            // Delete data
+            receivedData = "";
+
+            // Exit
+            return;
+        }
+
 		// Exit if EOP not present
 		if (endIndex < 0 || startIndex < 0) return;
-displayMessage(TV_console, "Packet found: [" + receivedData.substring(startIndex + 1, endIndex) + "]\n");
+
+        // Debug receive print
+        if (DEBUG) displayMessage(TV_console, "Packet found: [" + receivedData.substring(startIndex + 1, endIndex) + "]\n");
 
 		// Grab packet
 		StringTokenizer packetTokens = new StringTokenizer(receivedData.substring(startIndex + 1, endIndex));
@@ -417,7 +452,7 @@ displayMessage(TV_console, "Packet found: [" + receivedData.substring(startIndex
 					// Add current sample to array
 					accelSamples.add(currSample);
 					
-					// TODO: Update graph
+					// Update graph
                     updateChart(currSample);
 
                     break;

@@ -14,7 +14,7 @@
     <TextView
         android:id="@+id/MainActivity_TextView_Console"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="20dp"
         android:scrollbars="vertical"
         android:textColor="@color/Green"
         android:background="@color/Black"
@@ -43,7 +43,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Save"/>
+                android:text="@string/MainActivity_Button_Save"/>
 
             <Button
                 android:id="@+id/MainActivity_Button_Send"
@@ -52,6 +52,19 @@
                 android:layout_weight="1"
                 android:text="Send"/>
         </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/MainActivity_Button_StartStop"
+            android:text="@string/MainActivity_Button_StartStop_Start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
     </LinearLayout>
 
 </LinearLayout>

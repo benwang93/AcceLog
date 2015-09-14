@@ -18,4 +18,9 @@
     <string name="no_device_found">No device found!</string>
     <string name="found">found!</string>
     <string name="title_activity_save_csv">SaveCSVActivity</string>
+
+    <string name="MainActivity_Button_Save">Save</string>
+
+    <string name="MainActivity_Button_StartStop_Start">Start</string>
+    <string name="MainActivity_Button_StartStop_Stop">Stop</string>
 </resources>
