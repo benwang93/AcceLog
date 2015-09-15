@@ -26,4 +26,6 @@
 
     <string name="MainActivity_Button_StartStop_Start">Start</string>
     <string name="MainActivity_Button_StartStop_Stop">Stop</string>
+
+    <string name="action_quit">Quit</string>
 </resources>

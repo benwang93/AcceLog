@@ -42,6 +42,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -63,7 +64,7 @@ import java.util.StringTokenizer;
 public class MainActivity extends AppCompatActivity {
 
     // Debug mode?
-    public static final boolean DEBUG = false;
+    public static boolean DEBUG = false;
 
     // Packet specification
     private static final char ACCEL_SOP = '{';
@@ -98,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
     TextView TV_console;
     LineChart LC_oscope;
     Button Btn_startStop;
+    LinearLayout LL_debugConsole;
 
     boolean recordingIsStarted = false;
 
@@ -197,6 +199,9 @@ displayMessage(TV_console, "findDevice()\n");
         TV_console = (TextView) findViewById(R.id.MainActivity_TextView_Console);
         TV_console.setMovementMethod(new ScrollingMovementMethod());
 
+        LL_debugConsole = (LinearLayout) findViewById(R.id.MainActivity_LinearLayout_DebugConsole);
+        LL_debugConsole.setVisibility(View.GONE);
+
         final EditText ET_send = (EditText) findViewById(R.id.MainActivity_EditText_Send);
 
         // Send Button
@@ -231,6 +236,15 @@ displayMessage(TV_console, "findDevice()\n");
                 Btn_startStop.setText(recordingIsStarted ?
                         R.string.MainActivity_Button_StartStop_Stop :
                         R.string.MainActivity_Button_StartStop_Start);
+            }
+        });
+
+        // DEBUG button
+        findViewById(R.id.MainActivity_Button_Debug).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                toggleDebug();
+                displayMessage(TV_console, "Debug mode active: " + DEBUG + "\n");
             }
         });
 
@@ -341,6 +355,10 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
                 displayMessage(TV_console, "Load option selected");
 //                startActivity(new Intent(Intent.ACTION_VIEW,
 //                        Uri.parse("http://ron.bems.se/arducom/primaindex.php")));
+                return true;
+
+            case R.id.MainActivity_action_quit:
+                finish();       // finish activity
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -514,5 +532,18 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
 
         // Clear received data buffer
         receivedData = "";
+    }
+
+    void toggleDebug(){
+        DEBUG = !DEBUG;
+
+        if (DEBUG){
+            // Enable console and debug
+            LL_debugConsole.setVisibility(View.VISIBLE);
+        } else {
+            // Disable console and debug
+            LL_debugConsole.setVisibility(View.GONE);
+        }
+
     }
 }
