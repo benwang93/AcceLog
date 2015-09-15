@@ -20,6 +20,9 @@
     <string name="title_activity_save_csv">SaveCSVActivity</string>
 
     <string name="MainActivity_Button_Save">Save</string>
+    <string name="MainActivity_Action_Save">Save data</string>
+
+    <string name="MainActivity_Action_Load">Load data</string>
 
     <string name="MainActivity_Button_StartStop_Start">Start</string>
     <string name="MainActivity_Button_StartStop_Stop">Stop</string>

@@ -1,6 +1,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
+
+    <item android:id="@+id/MainActivity_action_save" android:title="@string/MainActivity_Action_Save"
+        android:orderInCategory="95" app:showAsAction="never" />
+
+    <item android:id="@+id/MainActivity_action_load" android:title="@string/MainActivity_Action_Load"
+        android:orderInCategory="96" app:showAsAction="never" />
+
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="100" app:showAsAction="never" />
 </menu>

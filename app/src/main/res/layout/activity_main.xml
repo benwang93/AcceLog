@@ -21,6 +21,7 @@
         android:layout_weight="1"/>
 
     <LinearLayout
+        android:id="@+id/MainActivity_LinearLayout_ConsoleInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
@@ -62,6 +63,13 @@
         <Button
             android:id="@+id/MainActivity_Button_StartStop"
             android:text="@string/MainActivity_Button_StartStop_Start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/MainActivity_Button_Debug"
+            android:text="DEBUG"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"/>

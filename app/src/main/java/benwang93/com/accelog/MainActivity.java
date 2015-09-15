@@ -215,12 +215,7 @@ displayMessage(TV_console, "findDevice()\n");
 
             @Override
             public void onClick(View v) {
-                Intent saveIntent = new Intent(getApplicationContext(), SaveCSVActivity.class);
-                saveIntent.putExtra(DATA_SAVE, receivedData.getBytes());
-                startActivity(saveIntent);
-
-                // Clear received data buffer
-                receivedData = "";
+                saveDataActivity();
             }
         });
 
@@ -338,13 +333,14 @@ displayMessage(TV_console, "onNewIntent() called\n");
 displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
 
         switch (item.getItemId()) {
-            case R.id.help:
-                startActivity(new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("http://ron.bems.se/arducom/usage.html")));
+            case R.id.MainActivity_action_save:
+                displayMessage(TV_console, "Save option selected!");
+                saveDataActivity();
                 return true;
-            case R.id.about:
-                startActivity(new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("http://ron.bems.se/arducom/primaindex.php")));
+            case R.id.MainActivity_action_load:
+                displayMessage(TV_console, "Load option selected");
+//                startActivity(new Intent(Intent.ACTION_VIEW,
+//                        Uri.parse("http://ron.bems.se/arducom/primaindex.php")));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -509,5 +505,14 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
         data.setValueTextSize(9f);
 
         LC_oscope.setData(data);
+    }
+
+    void saveDataActivity(){
+        Intent saveIntent = new Intent(getApplicationContext(), SaveCSVActivity.class);
+        saveIntent.putExtra(DATA_SAVE, receivedData.getBytes());
+        startActivity(saveIntent);
+
+        // Clear received data buffer
+        receivedData = "";
     }
 }
