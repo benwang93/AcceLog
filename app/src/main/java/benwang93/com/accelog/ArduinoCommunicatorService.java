@@ -124,6 +124,13 @@ public class ArduinoCommunicatorService extends Service {
             lineEncodingRequest[0] = 0x00;
             lineEncodingRequest[1] = 0x4B;
             break;
+
+        case 115200:
+            lineEncodingRequest[0] = (byte) 0x00;
+            lineEncodingRequest[1] = (byte) 0xC2;
+            lineEncodingRequest[2] = (byte) 0x01;
+
+            break;
         }
 
         return lineEncodingRequest;
@@ -149,7 +156,8 @@ public class ArduinoCommunicatorService extends Service {
         // Set control line state
         mUsbConnection.controlTransfer(0x21, 0x22, 0, 0, null, 0, 0);
         // Set line encoding.
-        mUsbConnection.controlTransfer(0x21, 0x20, 0, 0, getLineEncoding(9600), 7, 0);
+//        mUsbConnection.controlTransfer(0x21, 0x20, 0, 0, getLineEncoding(9600), 7, 0);
+        mUsbConnection.controlTransfer(0x21, 0x20, 0, 0, getLineEncoding(115200), 7, 0);
 
         for (int i = 0; i < usbInterface.getEndpointCount(); i++) {
             if (usbInterface.getEndpoint(i).getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
