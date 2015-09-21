@@ -1,4 +1,4 @@
-package benwang93.com.accelog;
+package benwang93.com.oscope;
 
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package benwang93.com.accelog;
+package benwang93.com.oscope;
 
 import java.util.ArrayList;
 import java.util.HashMap;

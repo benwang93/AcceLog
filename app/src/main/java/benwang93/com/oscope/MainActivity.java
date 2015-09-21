@@ -20,7 +20,7 @@
  * limitations under the License.
  */
 
-package benwang93.com.accelog;
+package benwang93.com.oscope;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final static String TAG = "MainActivity";
 
-    final static String DATA_SAVE = "benwang93.com.accelog.intent.extra.SAVE_DATA";
+    final static String DATA_SAVE = "benwang93.com.oscope.intent.extra.SAVE_DATA";
 
     private Boolean mIsReceiving;
     private ArrayList<ByteArray> mTransferredDataList = new ArrayList<ByteArray>();
@@ -106,6 +106,9 @@ public class MainActivity extends AppCompatActivity {
     // Chart specifications
     private static final float AXIS_MIN = -2f;
     private static final float AXIS_MAX = 2f;
+    private static final float AXIS_MIN_OSCOPE = 0f;
+    private static final float AXIS_MAX_OSCOPE = 5f;
+
 
     String[] CHART_NAMES = {"X Axis", "Y Axis", "Z Axis"};
     int[] CHART_COLORS = {Color.BLUE, Color.GREEN, Color.RED};
@@ -279,6 +282,8 @@ displayMessage(TV_console, "findDevice()\n");
         YAxis leftAxis = LC_oscope.getAxisLeft();
         leftAxis.setAxisMaxValue(AXIS_MAX);
         leftAxis.setAxisMinValue(AXIS_MIN);
+        leftAxis.setAxisMaxValue(AXIS_MAX_OSCOPE);
+        leftAxis.setAxisMinValue(AXIS_MIN_OSCOPE);
         leftAxis.setStartAtZero(false);
 
         YAxis rightAxis = LC_oscope.getAxisRight();
@@ -471,8 +476,30 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
 
                     break;
 				} else {
-                    displayMessage(TV_console, "Incorrect number of packets!\n");
+                    displayMessage(TV_console, "Incorrect number of items in Accelerometer data packet!\n");
 				}
+
+            case 'O':
+                // Check for correct number of elements (# tokens == 3)
+                if (packetTokens.countTokens() == 3){
+                    AccelSample currSample = new AccelSample();
+                    currSample.time = Calendar.getInstance().getTimeInMillis();
+                    currSample.aX = Double.parseDouble(packetTokens.nextToken()) / (1024 / 5);
+                    currSample.aY = Double.parseDouble(packetTokens.nextToken()) / (1024 / 5);
+                    currSample.aZ = Double.parseDouble(packetTokens.nextToken()) / (1024 / 5);
+
+                    // TODO: Check for data within bounds
+
+                    // Add current sample to array
+                    accelSamples.add(currSample);
+
+                    // Update graph
+                    updateChart(currSample);
+
+                    break;
+                } else {
+                    displayMessage(TV_console, "Incorrect number of items in Oscope packet!\n");
+                }
 			default:					// Invalid packet type
                 displayMessage(TV_console, "Invalid packet type! (" + packetType + ")\n");
 		}

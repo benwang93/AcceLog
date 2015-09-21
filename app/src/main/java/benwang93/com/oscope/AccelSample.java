@@ -1,4 +1,4 @@
-package benwang93.com.accelog;
+package benwang93.com.oscope;
 
 /**
  * Struct to store a single acceleration data point.
