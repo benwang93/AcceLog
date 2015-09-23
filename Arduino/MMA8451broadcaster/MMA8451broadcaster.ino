@@ -34,7 +34,7 @@ const char PACKET_TYPE_ACCEL_G = 'G';
 Adafruit_MMA8451 mma = Adafruit_MMA8451();
 
 void setup(void) {
-  Serial.begin(115200);
+  Serial.begin(19200);
   
   Serial.println("Adafruit MMA8451 test!");
   

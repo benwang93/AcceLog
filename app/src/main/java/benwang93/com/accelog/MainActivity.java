@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Simple date formatter for X-axis values on chart
     public static Date startTime = Calendar.getInstance().getTime();
-    public static SimpleDateFormat sdf_graph = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    public static SimpleDateFormat sdf_graph = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
 
     // UI Elements
     TextView TV_console;
@@ -101,7 +101,12 @@ public class MainActivity extends AppCompatActivity {
     Button Btn_startStop;
     LinearLayout LL_debugConsole;
 
+    // Start/Stop button functionality (true == recording)
     boolean recordingIsStarted = false;
+
+    // Frame skip for drawing graph
+    private static final int LC_OSCOPE_FRAMESKIP = 0;
+    private static int LC_oscope_currentFrameskip = 0;
 
     // Chart specifications
     private static final float AXIS_MIN = -2f;
@@ -467,7 +472,12 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
 					accelSamples.add(currSample);
 					
 					// Update graph
-                    updateChart(currSample);
+                    if (LC_oscope_currentFrameskip > LC_OSCOPE_FRAMESKIP){
+                        LC_oscope_currentFrameskip = 0;
+                        updateChart(currSample);
+                    } else {
+                        LC_oscope_currentFrameskip++;
+                    }
 
                     break;
 				} else {
