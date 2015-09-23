@@ -156,7 +156,6 @@ public class ArduinoCommunicatorService extends Service {
         // Set control line state
         mUsbConnection.controlTransfer(0x21, 0x22, 0, 0, null, 0, 0);
         // Set line encoding.
-//        mUsbConnection.controlTransfer(0x21, 0x20, 0, 0, getLineEncoding(9600), 7, 0);
         mUsbConnection.controlTransfer(0x21, 0x20, 0, 0, getLineEncoding(19200), 7, 0);
 
         for (int i = 0; i < usbInterface.getEndpointCount(); i++) {
