@@ -450,36 +450,45 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
 		StringTokenizer packetTokens = new StringTokenizer(receivedData.substring(startIndex + 1, endIndex));
 
 		// Parse packet type
-		String packetType = packetTokens.nextToken();
-		switch (packetType.charAt(0)){
-			case 'G':					// Acceleration in Gs
-				// Check for correct number of elements (# tokens == 3)
-				if (packetTokens.countTokens() == 3){
-					AccelSample currSample = new AccelSample();
-					currSample.time = Calendar.getInstance().getTimeInMillis();
-					currSample.aX = Double.parseDouble(packetTokens.nextToken());
-					currSample.aY = Double.parseDouble(packetTokens.nextToken());
-					currSample.aZ = Double.parseDouble(packetTokens.nextToken());
-					
-					// TODO: Check for data within bounds
-					
-					// Add current sample to array
-					accelSamples.add(currSample);
-					
-					// Update graph
-                    updateChart(currSample);
+        try {
+            String packetType = packetTokens.nextToken();
+            switch (packetType.charAt(0)) {
+                case 'G':                    // Acceleration in Gs
+                    // Check for correct number of elements (# tokens == 3)
+                    if (packetTokens.countTokens() == 3) {
+                        AccelSample currSample = new AccelSample();
+                        currSample.time = Calendar.getInstance().getTimeInMillis();
+                        currSample.aX = Double.parseDouble(packetTokens.nextToken());
+                        currSample.aY = Double.parseDouble(packetTokens.nextToken());
+                        currSample.aZ = Double.parseDouble(packetTokens.nextToken());
 
-                    break;
-				} else {
-                    displayMessage(TV_console, "Incorrect number of packets!\n");
-				}
-			default:					// Invalid packet type
-                displayMessage(TV_console, "Invalid packet type! (" + packetType + ")\n");
-		}
+                        // TODO: Check for data within bounds
+
+                        // Add current sample to array
+                        accelSamples.add(currSample);
+
+                        // Frame skip
+
+                        // Update graph
+                        updateChart(currSample);
+
+                        break;
+                    } else {
+                        displayMessage(TV_console, "Incorrect number of packets!\n");
+                    }
+                default:                    // Invalid packet type
+                    displayMessage(TV_console, "Invalid packet type! (" + packetType + ")\n");
+            }
+        } catch (Exception e){
+            displayMessage(TV_console, "Error: " + e.getMessage() + "\n");
+        }
 		
 		// Remove parsed data from buffer
 		receivedData = receivedData.substring(endIndex + 1);
     }
+
+//    private int dataDelNum = 0;
+    private static final int LC_MAX_ELTS = 120;
 
     private void updateChart(AccelSample sample){
         LineData data = LC_oscope.getData();
@@ -487,10 +496,24 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
         // Add new x value
         data.addXValue(sdf_graph.format(new Date(sample.time)));
 
+        // Number of entries
+//        int numEntries = data.getDataSetByIndex(0).getEntryCount();
+        int numEntries = data.getXValCount();
+
         // Set new data
-        data.addEntry(new Entry((float)sample.aX, data.getDataSetByIndex(0).getEntryCount()), 0);
-        data.addEntry(new Entry((float)sample.aY, data.getDataSetByIndex(1).getEntryCount()), 1);
-        data.addEntry(new Entry((float) sample.aZ, data.getDataSetByIndex(2).getEntryCount()), 2);
+        data.addEntry(new Entry((float)sample.aX, numEntries), 0);
+        data.addEntry(new Entry((float)sample.aY, numEntries), 1);
+        data.addEntry(new Entry((float)sample.aZ, numEntries), 2);
+
+        // Remove old data
+//        displayMessage(TV_console, "numElts: " + data.getDataSetByIndex(0).getEntryCount() + "  numX: " + data.getXValCount() + "\n");
+        if (numEntries > LC_MAX_ELTS) {
+//            displayMessage(TV_console, "del status: " + data.getDataSetByIndex(0).getEntryCount() + "\n");
+            data.removeEntry(numEntries + 1 - LC_MAX_ELTS, 0);
+            data.removeEntry(numEntries + 1 - LC_MAX_ELTS, 1);
+            data.removeEntry(numEntries + 1 - LC_MAX_ELTS, 2);
+//            data.removeXValue(0);
+        }
 
         LC_oscope.notifyDataSetChanged();
 
@@ -498,6 +521,7 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
         LC_oscope.setVisibleXRangeMaximum(120);
 
         // move to the latest entry
+//        LC_oscope.invalidate();
         LC_oscope.moveViewToX(data.getXValCount() - 121);
     }
 
@@ -510,6 +534,7 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
             set.setColor(CHART_COLORS[setNum]);
             set.setCircleColor(CHART_COLORS[setNum]);
 //            set.setLineWidth(2f);
+            set.setDrawValues(false);
             set.setCircleSize(0);
 //            set.setFillAlpha(65);
 //            set.setFillColor(Color.GREEN);
