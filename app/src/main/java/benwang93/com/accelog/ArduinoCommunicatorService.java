@@ -52,6 +52,8 @@ public class ArduinoCommunicatorService extends Service {
     final static String DATA_SENT_INTERNAL_INTENT = "benwang93.com.accelog.internal.intent.action.DATA_SENT";
     final static String DATA_EXTRA = "benwang93.com.accelog.intent.extra.DATA";
 
+    private final static int BAUD_RATE = 19200;
+
     @Override
     public IBinder onBind(Intent arg0) {
         return null;
@@ -156,7 +158,7 @@ public class ArduinoCommunicatorService extends Service {
         // Set control line state
         mUsbConnection.controlTransfer(0x21, 0x22, 0, 0, null, 0, 0);
         // Set line encoding.
-        mUsbConnection.controlTransfer(0x21, 0x20, 0, 0, getLineEncoding(19200), 7, 0);
+        mUsbConnection.controlTransfer(0x21, 0x20, 0, 0, getLineEncoding(BAUD_RATE), 7, 0);
 
         for (int i = 0; i < usbInterface.getEndpointCount(); i++) {
             if (usbInterface.getEndpoint(i).getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {

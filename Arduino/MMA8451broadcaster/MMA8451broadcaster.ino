@@ -28,13 +28,14 @@ const char PACKET_DELIM = '\t';
 
 const char PACKET_TYPE_ACCEL_G = 'G';
 
+const int BAUD_RATE = 19200;
 
 
 // Accelerometer object
 Adafruit_MMA8451 mma = Adafruit_MMA8451();
 
 void setup(void) {
-  Serial.begin(19200);
+  Serial.begin(BAUD_RATE);
   
   Serial.println("Adafruit MMA8451 test!");
   
