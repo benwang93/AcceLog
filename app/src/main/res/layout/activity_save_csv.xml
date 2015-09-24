@@ -36,6 +36,13 @@
 
     </LinearLayout>
 
+    <ProgressBar
+        android:id="@+id/SaveCSVActivity_ProgressBar_SaveStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        style="@android:style/Widget.ProgressBar.Horizontal"/>
+
     <TextView
         android:id="@+id/SaveCSVActivity_TextView_Error"
         android:layout_width="match_parent"

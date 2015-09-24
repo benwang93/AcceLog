@@ -451,44 +451,47 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
         // Debug receive print
         if (DEBUG) displayMessage(TV_console, "Packet found: [" + receivedData.substring(startIndex + 1, endIndex) + "]\n");
 
-		// Grab packet
-		StringTokenizer packetTokens = new StringTokenizer(receivedData.substring(startIndex + 1, endIndex));
+        try {
+            // Grab packet
+            StringTokenizer packetTokens = new StringTokenizer(receivedData.substring(startIndex + 1, endIndex));
 
-		// Parse packet type
-		String packetType = packetTokens.nextToken();
-		switch (packetType.charAt(0)){
-			case 'G':					// Acceleration in Gs
-				// Check for correct number of elements (# tokens == 3)
-				if (packetTokens.countTokens() == 3){
-					AccelSample currSample = new AccelSample();
-					currSample.time = Calendar.getInstance().getTimeInMillis();
-					currSample.aX = Double.parseDouble(packetTokens.nextToken());
-					currSample.aY = Double.parseDouble(packetTokens.nextToken());
-					currSample.aZ = Double.parseDouble(packetTokens.nextToken());
-					
-					// TODO: Check for data within bounds
-					
-					// Add current sample to array
-					accelSamples.add(currSample);
-					
-					// Frame skip
-                    if (LC_oscope_currentFrameskip > LC_OSCOPE_FRAMESKIP){
-                        LC_oscope_currentFrameskip = 0;
-						
-						// Update graph
-                        updateChart(currSample);
+            // Parse packet type
+            String packetType = packetTokens.nextToken();
+            switch (packetType.charAt(0)) {
+                case 'G':                    // Acceleration in Gs
+                    // Check for correct number of elements (# tokens == 3)
+                    if (packetTokens.countTokens() == 3) {
+                        AccelSample currSample = new AccelSample();
+                        currSample.time = Calendar.getInstance().getTimeInMillis();
+                        currSample.aX = Double.parseDouble(packetTokens.nextToken());
+                        currSample.aY = Double.parseDouble(packetTokens.nextToken());
+                        currSample.aZ = Double.parseDouble(packetTokens.nextToken());
+
+                        // TODO: Check for data within bounds
+
+                        // Add current sample to array
+                        accelSamples.add(currSample);
+
+                        // Frame skip
+                        if (LC_oscope_currentFrameskip > LC_OSCOPE_FRAMESKIP) {
+                            LC_oscope_currentFrameskip = 0;
+
+                            // Update graph
+                            updateChart(currSample);
+                        } else {
+                            LC_oscope_currentFrameskip++;
+                        }
+
+                        break;
                     } else {
-                        LC_oscope_currentFrameskip++;
+                        displayMessage(TV_console, "Incorrect number of packets!\n");
                     }
-
-                    break;
-				} else {
-                    displayMessage(TV_console, "Incorrect number of packets!\n");
-				}
-			default:					// Invalid packet type
-                displayMessage(TV_console, "Invalid packet type! (" + packetType + ")\n");
-		}
-		
+                default:                    // Invalid packet type
+                    displayMessage(TV_console, "Invalid packet type! (" + packetType + ")\n");
+            }
+        } catch (Exception e){
+            displayMessage(TV_console, "Error: " + e.getMessage() + "\n");
+        }
 		// Remove parsed data from buffer
 		receivedData = receivedData.substring(endIndex + 1);
     }
