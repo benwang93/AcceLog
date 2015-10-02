@@ -110,11 +110,6 @@ public class SaveCSVActivity extends AppCompatActivity {
         });
     }
 
-    private byte[] getDataToWrite(){
-        // Parse data and write
-        return getIntent().getByteArrayExtra(MainActivity.DATA_SAVE);
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

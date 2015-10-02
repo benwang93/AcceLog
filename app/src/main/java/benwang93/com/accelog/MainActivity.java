@@ -52,6 +52,8 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -68,8 +70,8 @@ public class MainActivity extends AppCompatActivity {
 
     // Packet specification
     private static final char ACCEL_SOP = '{';
-    private static final char ACCEL_DELIM = '\t';
-    private static final char ACCEL_EOP = '}';
+//    private static final char ACCEL_DELIM = '\t';
+//    private static final char ACCEL_EOP = '}';
 
     // Arduino communicator variables
     private static final int ARDUINO_USB_VENDOR_ID = 0x2341;
@@ -86,7 +88,12 @@ public class MainActivity extends AppCompatActivity {
 
     private Boolean mIsReceiving;
     private ArrayList<ByteArray> mTransferredDataList = new ArrayList<ByteArray>();
-    private String receivedData = "";
+
+    // Receive buffer definitions
+    final static int PACKET_BUFF_NUM_FLOATS = 3;						// Number of floats in packet
+    final static int PACKET_BUFF_LENGTH = PACKET_BUFF_NUM_FLOATS * 4;	// Length of packet (3x float = 12 B)
+    private static byte[] packetBuff = new byte[PACKET_BUFF_LENGTH];			// Buffer for packet
+    private static int currBuffPos = 0;										// Current position in buffer
 
     // Arraylist for saving all readings
     public static ArrayList<AccelSample> accelSamples = new ArrayList<>(0);
@@ -98,6 +105,8 @@ public class MainActivity extends AppCompatActivity {
     // UI Elements
     TextView TV_console;
     LineChart LC_oscope;
+    private static final int LC_MAX_ELTS = 120;
+
     Button Btn_startStop;
     LinearLayout LL_debugConsole;
 
@@ -326,11 +335,7 @@ displayMessage(TV_console, "onNewIntent() called\n");
     protected void onPause(){
         super.onPause();
 
-        // Save data
-
-
-        // Clear string
-//        receivedData = "";
+        // TODO: Save data
     }
 
     @Override
@@ -358,10 +363,7 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
                 return true;
             case R.id.MainActivity_action_load:
                 displayMessage(TV_console, "Load option selected");
-//                startActivity(new Intent(Intent.ACTION_VIEW,
-//                        Uri.parse("http://ron.bems.se/arducom/primaindex.php")));
                 return true;
-
             case R.id.MainActivity_action_quit:
                 finish();       // finish activity
                 return true;
@@ -381,17 +383,11 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
             final byte[] newTransferredData = intent.getByteArrayExtra(ArduinoCommunicatorService.DATA_EXTRA);
             if (DEBUG) Log.i(TAG, "data: " + newTransferredData.length + " \"" + new String(newTransferredData) + "\"");
 
-            // Convert transferred data into string
-            String newTransferredDataString = new String(newTransferredData);
-            receivedData += newTransferredDataString;
+            // Debug print
+            if (!receiving) displayMessage(TV_console, "S: " + new String(newTransferredData) + "\n");
 
             // Receive and parse packet
-            parseForPacket();
-
-
-            // Display new text
-//            displayMessage(TV_console, receiving ? "R: " : "S: "); displayMessage(TV_console, /*"New message: " +*/ newTransferredDataString + "\n");
-            if (!receiving) displayMessage(TV_console, "S: " + newTransferredDataString + "\n");
+            parseForPacket(newTransferredData);
         }
 
         @Override
@@ -430,74 +426,109 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
             textView.scrollTo(0, 0);
     }
 
-    private void parseForPacket(){
-        // Parse for complete packet
-        int startIndex = receivedData.indexOf(ACCEL_SOP);
-        int endIndex = receivedData.indexOf(ACCEL_EOP, startIndex);
-		String currPacket;
+
+    // Returns index of next SOP starting from startIndex, or -1 if no SOP found
+    private static int indexOfSOP(byte[] receiveBuff, int startIndex){
+        for (int i = startIndex; i < receiveBuff.length; i++){
+            if (receiveBuff[i] == ACCEL_SOP){
+                return i;
+            }
+        }
+
+        // Default value
+        return -1;
+    }
+
+    // Returns true if buffer contains a SOP after startIndex
+    private static boolean bufferHasPacket(byte[] receiveBuff, int startIndex){
+        return indexOfSOP(receiveBuff, startIndex) != -1;
+    }
+
+
+    // Call upon data receive to parse for floats to populate the x, y, and z axis acceleration
+    private void  parseForPacket(byte[] receiveBuff){
+        boolean SOPFound = false;		// Check for if buffer contains a SOP
+        int remainingBuffLen = -1;		// Number of bytes left in receive buffer before next SOP or end of buffer
+        int currReceivePos = 0;			// Current position in receive buffer
 
         // Exit if not recording
         if (!recordingIsStarted){
-            // Delete data
-            receivedData = "";
-
-            // Exit
             return;
         }
 
-		// Exit if EOP not present
-		if (endIndex < 0 || startIndex < 0) return;
+        // Repeat while data available
+        do {
+            try {
+                // Initialize
+                SOPFound = bufferHasPacket(receiveBuff, currReceivePos);	// Bool if SOP is found
+                remainingBuffLen =											// Remaining characters until first SOP (or end of buffer)
+                        SOPFound ?
+                                indexOfSOP(receiveBuff, currReceivePos) - currReceivePos:
+                                receiveBuff.length - currReceivePos;
 
-        // Debug receive print
-        if (DEBUG) displayMessage(TV_console, "Packet found: [" + receivedData.substring(startIndex + 1, endIndex) + "]\n");
+                // Error check length. Discard this data if wrong. Grab next
+                if ((SOPFound && currBuffPos + remainingBuffLen != PACKET_BUFF_LENGTH) ||		// SOP found and incorrect length
+                        (!SOPFound && currBuffPos + remainingBuffLen > PACKET_BUFF_LENGTH)){	// or buffer length appended is too long
+                    // Discard this data
+                    currReceivePos = indexOfSOP(receiveBuff, currReceivePos) + 1;
 
-        try {
-            // Grab packet
-            StringTokenizer packetTokens = new StringTokenizer(receivedData.substring(startIndex + 1, endIndex));
+                    // Reset lengths/buffer
+                    currBuffPos = 0;
 
-            // Parse packet type
-            String packetType = packetTokens.nextToken();
-            switch (packetType.charAt(0)) {
-                case 'G':                    // Acceleration in Gs
-                    // Check for correct number of elements (# tokens == 3)
-                    if (packetTokens.countTokens() == 3) {
-                        AccelSample currSample = new AccelSample();
-                        currSample.time = Calendar.getInstance().getTimeInMillis();
-                        currSample.aX = Double.parseDouble(packetTokens.nextToken());
-                        currSample.aY = Double.parseDouble(packetTokens.nextToken());
-                        currSample.aZ = Double.parseDouble(packetTokens.nextToken());
+                    // Parse for next packet
+                    continue;
+                }
 
-                        // TODO: Check for data within bounds
+                // Compute bytes to copy and copy buffer over
+                int numBytesCopied = Math.min(PACKET_BUFF_LENGTH - currBuffPos, remainingBuffLen);
+                System.arraycopy(receiveBuff, currReceivePos, packetBuff, currBuffPos, numBytesCopied);
 
-                        // Add current sample to array
-                        accelSamples.add(currSample);
+                // Recalculate buffer position
+                currReceivePos += numBytesCopied;
+                currBuffPos += numBytesCopied;
 
-                        // Frame skip
-                        if (LC_oscope_currentFrameskip > LC_OSCOPE_FRAMESKIP) {
-                            LC_oscope_currentFrameskip = 0;
+                // Full & valid length buffer check
+                // if full buffer, parse for floats and add to packet
+                if (SOPFound && currBuffPos == PACKET_BUFF_LENGTH){
+                    // Create new packet
+                    AccelSample currSample = new AccelSample();
+                    currSample.time = Calendar.getInstance().getTimeInMillis();
+                    currSample.aX = ByteBuffer.wrap(packetBuff, 4 * 0, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+                    currSample.aY = ByteBuffer.wrap(packetBuff, 4 * 1, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+                    currSample.aZ = ByteBuffer.wrap(packetBuff, 4 * 2, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
 
-                            // Update graph
-                            updateChart(currSample);
-                        } else {
-                            LC_oscope_currentFrameskip++;
-                        }
+                    // TODO: Check for data within bounds
 
-                        break;
+                    // Add current sample to array
+                    accelSamples.add(currSample);
+
+                    // Frame skip
+                    if (LC_oscope_currentFrameskip > LC_OSCOPE_FRAMESKIP) {
+                        LC_oscope_currentFrameskip = 0;
+
+                        // Update graph
+                        updateChart(currSample);
                     } else {
-                        displayMessage(TV_console, "Incorrect number of packets!\n");
+                        LC_oscope_currentFrameskip++;
                     }
-                default:                    // Invalid packet type
-                    displayMessage(TV_console, "Invalid packet type! (" + packetType + ")\n");
+
+                    // Reset lengths/buffer
+                    currReceivePos++;		// Skip over SOP character
+                    currBuffPos = 0;
+                }
+            } catch (Exception e){
+                System.out.println("ERROR: " + e.getMessage());
+
+                // On exception, discard this packet and reset buffer
+                currReceivePos = indexOfSOP(receiveBuff, currReceivePos) + 1;
+                currBuffPos = 0;
             }
-        } catch (Exception e){
-            displayMessage(TV_console, "Error: " + e.getMessage() + "\n");
-        }
-		// Remove parsed data from buffer
-		receivedData = receivedData.substring(endIndex + 1);
+        } while (currReceivePos < receiveBuff.length);
     }
 
-//    private int dataDelNum = 0;
-    private static final int LC_MAX_ELTS = 120;
+    private static void stringMod(String s){
+        s.concat(" world");
+    }
 
     private void updateChart(AccelSample sample){
         LineData data = LC_oscope.getData();
@@ -506,7 +537,6 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
         data.addXValue(sdf_graph.format(new Date(sample.time)));
 
         // Number of entries
-//        int numEntries = data.getDataSetByIndex(0).getEntryCount();
         int numEntries = data.getXValCount();
 
         // Set new data
@@ -517,11 +547,10 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
         // Remove old data
 //        displayMessage(TV_console, "numElts: " + data.getDataSetByIndex(0).getEntryCount() + "  numX: " + data.getXValCount() + "\n");
         if (numEntries > LC_MAX_ELTS) {
-//            displayMessage(TV_console, "del status: " + data.getDataSetByIndex(0).getEntryCount() + "\n");
             data.removeEntry(numEntries + 1 - LC_MAX_ELTS, 0);
             data.removeEntry(numEntries + 1 - LC_MAX_ELTS, 1);
             data.removeEntry(numEntries + 1 - LC_MAX_ELTS, 2);
-//            data.removeXValue(0);
+//            data.removeXValue(0); // Don't remove X value bc graph doesn't scroll right
         }
 
         LC_oscope.notifyDataSetChanged();
@@ -530,7 +559,7 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
         LC_oscope.setVisibleXRangeMaximum(120);
 
         // move to the latest entry
-//        LC_oscope.invalidate();
+//        LC_oscope.invalidate();   // Don't invalidate bc moveViewToX() does it
         LC_oscope.moveViewToX(data.getXValCount() - 121);
     }
 
@@ -561,11 +590,7 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
 
     void saveDataActivity(){
         Intent saveIntent = new Intent(getApplicationContext(), SaveCSVActivity.class);
-        saveIntent.putExtra(DATA_SAVE, receivedData.getBytes());
         startActivity(saveIntent);
-
-        // Clear received data buffer
-        receivedData = "";
     }
 
     void toggleDebug(){
