@@ -90,10 +90,15 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<ByteArray> mTransferredDataList = new ArrayList<ByteArray>();
 
     // Receive buffer definitions
+    final static int PACKET_NUM_LONGS = 1;                              // Number of longs (timestamp)
+    final static int PACKET_BYTES_LONG = 4;                             // Number of bytes in a long
     final static int PACKET_BUFF_NUM_FLOATS = 3;						// Number of floats in packet
-    final static int PACKET_BUFF_LENGTH = PACKET_BUFF_NUM_FLOATS * 4;	// Length of packet (3x float = 12 B)
-    private static byte[] packetBuff = new byte[PACKET_BUFF_LENGTH];			// Buffer for packet
-    private static int currBuffPos = 0;										// Current position in buffer
+    final static int PACKET_BYTES_FLOAT = 4;                            // Number of bytes in a float
+    final static int PACKET_BUFF_LENGTH =                               // Length of packet (3x float = 12 B)
+            PACKET_BUFF_NUM_FLOATS * PACKET_BYTES_FLOAT +
+            PACKET_NUM_LONGS * PACKET_BYTES_LONG;
+    private static byte[] packetBuff = new byte[PACKET_BUFF_LENGTH];	// Buffer for packet
+    private static int currBuffPos = 0;									// Current position in buffer
 
     // Arraylist for saving all readings
     public static ArrayList<AccelSample> accelSamples = new ArrayList<>(0);
@@ -101,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
     // Simple date formatter for X-axis values on chart
     public static Date startTime = Calendar.getInstance().getTime();
     public static SimpleDateFormat sdf_graph = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
+    private long startTimeOffset;
 
     // UI Elements
     TextView TV_console;
@@ -184,6 +190,9 @@ displayMessage(TV_console, "findDevice()\n");
             displayMessage(TV_console, "No device found\n");
             Toast.makeText(getBaseContext(), getString(R.string.no_device_found), Toast.LENGTH_LONG).show();
         } else {
+            // Save current time
+            startTimeOffset = Calendar.getInstance().getTimeInMillis();
+
             // Display message
             if (DEBUG) Log.i(TAG, "Device found!");
             displayMessage(TV_console, "Device found!\n");
@@ -492,10 +501,11 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
                 if (SOPFound && currBuffPos == PACKET_BUFF_LENGTH){
                     // Create new packet
                     AccelSample currSample = new AccelSample();
-                    currSample.time = Calendar.getInstance().getTimeInMillis();
-                    currSample.aX = ByteBuffer.wrap(packetBuff, 4 * 0, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
-                    currSample.aY = ByteBuffer.wrap(packetBuff, 4 * 1, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
-                    currSample.aZ = ByteBuffer.wrap(packetBuff, 4 * 2, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+//                    currSample.time = Calendar.getInstance().getTimeInMillis();
+                    currSample.time = ByteBuffer.wrap(packetBuff, 0, PACKET_BYTES_LONG).order(ByteOrder.LITTLE_ENDIAN).getInt() + startTimeOffset;
+                    currSample.aX = ByteBuffer.wrap(packetBuff, PACKET_BYTES_FLOAT * 0 + PACKET_BYTES_LONG, PACKET_BYTES_FLOAT).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+                    currSample.aY = ByteBuffer.wrap(packetBuff, PACKET_BYTES_FLOAT * 1 + PACKET_BYTES_LONG, PACKET_BYTES_FLOAT).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+                    currSample.aZ = ByteBuffer.wrap(packetBuff, PACKET_BYTES_FLOAT * 2 + PACKET_BYTES_LONG, PACKET_BYTES_FLOAT).order(ByteOrder.LITTLE_ENDIAN).getFloat();
 
                     // TODO: Check for data within bounds
 

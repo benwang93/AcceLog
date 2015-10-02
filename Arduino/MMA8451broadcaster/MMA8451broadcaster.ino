@@ -30,6 +30,9 @@ const char PACKET_TYPE_ACCEL_G = 'G';
 
 const int BAUD_RATE = 19200;
 
+// Delay between samples
+const int SAMPLE_PERIOD_US = 50; // us
+
 
 // Accelerometer object
 Adafruit_MMA8451 mma = Adafruit_MMA8451();
@@ -56,11 +59,12 @@ void setup(void) {
 void loop() {
   // Read the 'raw' data in 14-bit counts
   mma.read();
+  unsigned long currTime = millis();
   
   // Send packet
 //  Serial.print(PACKET_START); Serial.print(PACKET_TYPE_ACCEL_G); Serial.print(PACKET_DELIM); Serial.print(mma.x_g); Serial.print(PACKET_DELIM); Serial.print(mma.y_g); Serial.print(PACKET_DELIM); Serial.print(mma.z_g); Serial.println(PACKET_END);
-  Serial.print(PACKET_START); /*Serial.print(PACKET_TYPE_ACCEL_G);*/ Serial.write((byte*) &mma.x_g, sizeof(float)); Serial.write((byte*) &mma.y_g, sizeof(float)); Serial.write((byte*) &mma.z_g, sizeof(float));
+  Serial.print(PACKET_START); /*Serial.print(PACKET_TYPE_ACCEL_G);*/ Serial.write((byte*) &currTime, sizeof(unsigned long)); Serial.write((byte*) &mma.x_g, sizeof(float)); Serial.write((byte*) &mma.y_g, sizeof(float)); Serial.write((byte*) &mma.z_g, sizeof(float));
 
   // Delay to not flood Android device
-  delayMicroseconds(100);
+  delayMicroseconds(SAMPLE_PERIOD_US);
 }

@@ -24,7 +24,7 @@ public class SaveCSVActivity extends AppCompatActivity {
 
     private static final String FILENAME_BASE = "AcceLog/AcceLog_out_";
     private static final String FILENAME_EXTENSION = ".csv";
-    private static final String CSV_HEADER = "Timestamp,accel_X (G),accel_Y (G),accel_Z (G)\n";
+    private static final String CSV_HEADER = "Timestamp,Time (ms),accel_X (G),accel_Y (G),accel_Z (G)\n";
 
     static SimpleDateFormat sdf_filename = new SimpleDateFormat("yyyyMMd-HHmmss");
 
@@ -149,7 +149,7 @@ public class SaveCSVActivity extends AppCompatActivity {
                 // Write array out to .csv file
                 for (AccelSample sample : MainActivity.accelSamples){
                     try {
-                        String data = MainActivity.sdf_graph.format(new Date(sample.time)) + "," + sample.aX + "," + sample.aY +
+                        String data = MainActivity.sdf_graph.format(new Date(sample.time)) + "," + sample.time + "," + sample.aX + "," + sample.aY +
                                 "," + sample.aZ + "\n";
                         out.write(data.getBytes());
                     } catch (Exception e){
