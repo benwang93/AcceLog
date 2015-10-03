@@ -52,7 +52,7 @@ public class ArduinoCommunicatorService extends Service {
     final static String DATA_SENT_INTERNAL_INTENT = "benwang93.com.accelog.internal.intent.action.DATA_SENT";
     final static String DATA_EXTRA = "benwang93.com.accelog.intent.extra.DATA";
 
-    private final static int BAUD_RATE = 19200;
+    private final static int BAUD_RATE = 57600;
 
     @Override
     public IBinder onBind(Intent arg0) {
@@ -125,6 +125,11 @@ public class ArduinoCommunicatorService extends Service {
         case 19200:
             lineEncodingRequest[0] = 0x00;
             lineEncodingRequest[1] = 0x4B;
+            break;
+
+        case 57600:
+            lineEncodingRequest[0] = (byte) 0x00;
+            lineEncodingRequest[1] = (byte) 0xE1;
             break;
 
         case 115200:

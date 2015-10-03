@@ -28,10 +28,10 @@ const char PACKET_DELIM = '\t';
 
 const char PACKET_TYPE_ACCEL_G = 'G';
 
-const int BAUD_RATE = 19200;
+const unsigned int BAUD_RATE = 57600;
 
 // Delay between samples
-const int SAMPLE_PERIOD_US = 50; // us
+const int SAMPLE_PERIOD_US = 0; // us
 
 
 // Accelerometer object

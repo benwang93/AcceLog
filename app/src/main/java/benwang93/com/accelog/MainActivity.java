@@ -120,8 +120,8 @@ public class MainActivity extends AppCompatActivity {
     boolean recordingIsStarted = false;
 
     // Frame skip for drawing graph
-    private static final int LC_OSCOPE_FRAMESKIP = 0;
-    private static int LC_oscope_currentFrameskip = 0;
+    private static final int LC_OSCOPE_FRAMESKIP = 10;       // Number of frames to skip
+    private static int LC_oscope_currentFrameskip = 0;      // Counter for current frame
 
     // Chart specifications
     private static final float AXIS_MIN = -2f;
@@ -478,6 +478,10 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
                 // Error check length. Discard this data if wrong. Grab next
                 if ((SOPFound && currBuffPos + remainingBuffLen != PACKET_BUFF_LENGTH) ||		// SOP found and incorrect length
                         (!SOPFound && currBuffPos + remainingBuffLen > PACKET_BUFF_LENGTH)){	// or buffer length appended is too long
+
+                    // Debug
+                    if (DEBUG) displayMessage(TV_console, "Receiving error: Invalid packet length: " + (currBuffPos + remainingBuffLen) + "\n");
+
                     // Discard this data
                     currReceivePos = indexOfSOP(receiveBuff, currReceivePos) + 1;
 
@@ -527,7 +531,7 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
                     currBuffPos = 0;
                 }
             } catch (Exception e){
-                System.out.println("ERROR: " + e.getMessage());
+                displayMessage(TV_console, "Recieve exception: " + e.getMessage() + "\n");
 
                 // On exception, discard this packet and reset buffer
                 currReceivePos = indexOfSOP(receiveBuff, currReceivePos) + 1;
