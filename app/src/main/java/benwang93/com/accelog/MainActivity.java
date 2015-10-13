@@ -68,10 +68,10 @@ public class MainActivity extends AppCompatActivity {
     // Debug mode?
     public static boolean DEBUG = false;
 
-    // Packet specification
-    private static final char ACCEL_SOP = '{';
-//    private static final char ACCEL_DELIM = '\t';
-//    private static final char ACCEL_EOP = '}';
+//    // Packet specification
+//    private static final char ACCEL_SOP = '{';
+////    private static final char ACCEL_DELIM = '\t';
+////    private static final char ACCEL_EOP = '}';
 
     // Arduino communicator variables
     private static final int ARDUINO_USB_VENDOR_ID = 0x2341;
@@ -89,16 +89,16 @@ public class MainActivity extends AppCompatActivity {
     private Boolean mIsReceiving;
     private ArrayList<ByteArray> mTransferredDataList = new ArrayList<ByteArray>();
 
-    // Receive buffer definitions
-    final static int PACKET_NUM_LONGS = 1;                              // Number of longs (timestamp)
-    final static int PACKET_BYTES_LONG = 4;                             // Number of bytes in a long
-    final static int PACKET_BUFF_NUM_FLOATS = 3;						// Number of floats in packet
-    final static int PACKET_BYTES_FLOAT = 4;                            // Number of bytes in a float
-    final static int PACKET_BUFF_LENGTH =                               // Length of packet (3x float = 12 B)
-            PACKET_BUFF_NUM_FLOATS * PACKET_BYTES_FLOAT +
-            PACKET_NUM_LONGS * PACKET_BYTES_LONG;
-    private static byte[] packetBuff = new byte[PACKET_BUFF_LENGTH];	// Buffer for packet
-    private static int currBuffPos = 0;									// Current position in buffer
+//    // Receive buffer definitions
+//    final static int PACKET_NUM_LONGS = 1;                              // Number of longs (timestamp)
+//    final static int PACKET_BYTES_LONG = 4;                             // Number of bytes in a long
+//    final static int PACKET_BUFF_NUM_FLOATS = 3;						// Number of floats in packet
+//    final static int PACKET_BYTES_FLOAT = 4;                            // Number of bytes in a float
+//    final static int PACKET_BUFF_LENGTH =                               // Length of packet (3x float = 12 B)
+//            PACKET_BUFF_NUM_FLOATS * PACKET_BYTES_FLOAT +
+//            PACKET_NUM_LONGS * PACKET_BYTES_LONG;
+//    private static byte[] packetBuff = new byte[PACKET_BUFF_LENGTH];	// Buffer for packet
+//    private static int currBuffPos = 0;									// Current position in buffer
 
     // Arraylist for saving all readings
     public static ArrayList<AccelSample> accelSamples = new ArrayList<>(0);
@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
     // Simple date formatter for X-axis values on chart
     public static Date startTime = Calendar.getInstance().getTime();
     public static SimpleDateFormat sdf_graph = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
-    private long startTimeOffset;
+    public static long startTimeOffset;
 
     // UI Elements
     TextView TV_console;
@@ -117,11 +117,11 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout LL_debugConsole;
 
     // Start/Stop button functionality (true == recording)
-    boolean recordingIsStarted = false;
+    public static boolean recordingIsStarted = false;
 
-    // Frame skip for drawing graph
-    private static final int LC_OSCOPE_FRAMESKIP = 10;       // Number of frames to skip
-    private static int LC_oscope_currentFrameskip = 0;      // Counter for current frame
+//    // Frame skip for drawing graph
+//    public static final int LC_OSCOPE_FRAMESKIP = 10;       // Number of frames to skip
+//    public static int LC_oscope_currentFrameskip = 0;      // Counter for current frame
 
     // Chart specifications
     private static final float AXIS_MIN = -2f;
@@ -216,6 +216,7 @@ displayMessage(TV_console, "findDevice()\n");
         IntentFilter filter = new IntentFilter();
         filter.addAction(ArduinoCommunicatorService.DATA_RECEIVED_INTENT);
         filter.addAction(ArduinoCommunicatorService.DATA_SENT_INTERNAL_INTENT);
+        filter.addAction(ArduinoCommunicatorService.UPDATE_CHART_INTENT);
         registerReceiver(mReceiver, filter);
 
         // Grab UI elements
@@ -396,7 +397,17 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
             if (!receiving) displayMessage(TV_console, "S: " + new String(newTransferredData) + "\n");
 
             // Receive and parse packet
-            parseForPacket(newTransferredData);
+//            parseForPacket(newTransferredData);
+        }
+
+        private void extractAndUpdateChart(Intent intent){
+            // Extract current sample from intent
+            int index = intent.getIntExtra(ArduinoCommunicatorService.DATA_EXTRA, 0);
+
+            if (DEBUG) displayMessage(TV_console, "Updating chart, index " + index + "\n");
+
+            // Update chart
+            updateChart(accelSamples.get(index));
         }
 
         @Override
@@ -404,7 +415,9 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
             final String action = intent.getAction();
             if (DEBUG) Log.d(TAG, "onReceive() " + action);
 
-            if (ArduinoCommunicatorService.DATA_RECEIVED_INTENT.equals(action)) {
+            if (ArduinoCommunicatorService.UPDATE_CHART_INTENT.equals(action)) {
+                extractAndUpdateChart(intent);
+            } else if (ArduinoCommunicatorService.DATA_RECEIVED_INTENT.equals(action)) {
                 handleTransferredData(intent, true);
             } else if (ArduinoCommunicatorService.DATA_SENT_INTERNAL_INTENT.equals(action)) {
                 handleTransferredData(intent, false);
@@ -436,109 +449,109 @@ displayMessage(TV_console, "Opetion selected: " + item.getItemId() + "\n");
     }
 
 
-    // Returns index of next SOP starting from startIndex, or -1 if no SOP found
-    private static int indexOfSOP(byte[] receiveBuff, int startIndex){
-        for (int i = startIndex; i < receiveBuff.length; i++){
-            if (receiveBuff[i] == ACCEL_SOP){
-                return i;
-            }
-        }
-
-        // Default value
-        return -1;
-    }
-
-    // Returns true if buffer contains a SOP after startIndex
-    private static boolean bufferHasPacket(byte[] receiveBuff, int startIndex){
-        return indexOfSOP(receiveBuff, startIndex) != -1;
-    }
-
-
-    // Call upon data receive to parse for floats to populate the x, y, and z axis acceleration
-    private void  parseForPacket(byte[] receiveBuff){
-        boolean SOPFound = false;		// Check for if buffer contains a SOP
-        int remainingBuffLen = -1;		// Number of bytes left in receive buffer before next SOP or end of buffer
-        int currReceivePos = 0;			// Current position in receive buffer
-
-        // Exit if not recording
-        if (!recordingIsStarted){
-            return;
-        }
-
-        // Repeat while data available
-        do {
-            try {
-                // Initialize
-                SOPFound = bufferHasPacket(receiveBuff, currReceivePos);	// Bool if SOP is found
-                remainingBuffLen =											// Remaining characters until first SOP (or end of buffer)
-                        SOPFound ?
-                                indexOfSOP(receiveBuff, currReceivePos) - currReceivePos:
-                                receiveBuff.length - currReceivePos;
-
-                // Error check length. Discard this data if wrong. Grab next
-                if ((SOPFound && currBuffPos + remainingBuffLen != PACKET_BUFF_LENGTH) ||		// SOP found and incorrect length
-                        (!SOPFound && currBuffPos + remainingBuffLen > PACKET_BUFF_LENGTH)){	// or buffer length appended is too long
-
-                    // Debug
-                    if (DEBUG) displayMessage(TV_console, "Receiving error: Invalid packet length: " + (currBuffPos + remainingBuffLen) + "\n");
-
-                    // Discard this data
-                    currReceivePos = indexOfSOP(receiveBuff, currReceivePos) + 1;
-
-                    // Reset lengths/buffer
-                    currBuffPos = 0;
-
-                    // Parse for next packet
-                    continue;
-                }
-
-                // Compute bytes to copy and copy buffer over
-                int numBytesCopied = Math.min(PACKET_BUFF_LENGTH - currBuffPos, remainingBuffLen);
-                System.arraycopy(receiveBuff, currReceivePos, packetBuff, currBuffPos, numBytesCopied);
-
-                // Recalculate buffer position
-                currReceivePos += numBytesCopied;
-                currBuffPos += numBytesCopied;
-
-                // Full & valid length buffer check
-                // if full buffer, parse for floats and add to packet
-                if (SOPFound && currBuffPos == PACKET_BUFF_LENGTH){
-                    // Create new packet
-                    AccelSample currSample = new AccelSample();
-//                    currSample.time = Calendar.getInstance().getTimeInMillis();
-                    currSample.time = ByteBuffer.wrap(packetBuff, 0, PACKET_BYTES_LONG).order(ByteOrder.LITTLE_ENDIAN).getInt() + startTimeOffset;
-                    currSample.aX = ByteBuffer.wrap(packetBuff, PACKET_BYTES_FLOAT * 0 + PACKET_BYTES_LONG, PACKET_BYTES_FLOAT).order(ByteOrder.LITTLE_ENDIAN).getFloat();
-                    currSample.aY = ByteBuffer.wrap(packetBuff, PACKET_BYTES_FLOAT * 1 + PACKET_BYTES_LONG, PACKET_BYTES_FLOAT).order(ByteOrder.LITTLE_ENDIAN).getFloat();
-                    currSample.aZ = ByteBuffer.wrap(packetBuff, PACKET_BYTES_FLOAT * 2 + PACKET_BYTES_LONG, PACKET_BYTES_FLOAT).order(ByteOrder.LITTLE_ENDIAN).getFloat();
-
-                    // TODO: Check for data within bounds
-
-                    // Add current sample to array
-                    accelSamples.add(currSample);
-
-                    // Frame skip
-                    if (LC_oscope_currentFrameskip > LC_OSCOPE_FRAMESKIP) {
-                        LC_oscope_currentFrameskip = 0;
-
-                        // Update graph
-                        updateChart(currSample);
-                    } else {
-                        LC_oscope_currentFrameskip++;
-                    }
-
-                    // Reset lengths/buffer
-                    currReceivePos++;		// Skip over SOP character
-                    currBuffPos = 0;
-                }
-            } catch (Exception e){
-                displayMessage(TV_console, "Recieve exception: " + e.getMessage() + "\n");
-
-                // On exception, discard this packet and reset buffer
-                currReceivePos = indexOfSOP(receiveBuff, currReceivePos) + 1;
-                currBuffPos = 0;
-            }
-        } while (currReceivePos < receiveBuff.length);
-    }
+//    // Returns index of next SOP starting from startIndex, or -1 if no SOP found
+//    private static int indexOfSOP(byte[] receiveBuff, int startIndex){
+//        for (int i = startIndex; i < receiveBuff.length; i++){
+//            if (receiveBuff[i] == ACCEL_SOP){
+//                return i;
+//            }
+//        }
+//
+//        // Default value
+//        return -1;
+//    }
+//
+//    // Returns true if buffer contains a SOP after startIndex
+//    private static boolean bufferHasPacket(byte[] receiveBuff, int startIndex){
+//        return indexOfSOP(receiveBuff, startIndex) != -1;
+//    }
+//
+//
+//    // Call upon data receive to parse for floats to populate the x, y, and z axis acceleration
+//    private void  parseForPacket(byte[] receiveBuff){
+//        boolean SOPFound = false;		// Check for if buffer contains a SOP
+//        int remainingBuffLen = -1;		// Number of bytes left in receive buffer before next SOP or end of buffer
+//        int currReceivePos = 0;			// Current position in receive buffer
+//
+//        // Exit if not recording
+//        if (!recordingIsStarted){
+//            return;
+//        }
+//
+//        // Repeat while data available
+//        do {
+//            try {
+//                // Initialize
+//                SOPFound = bufferHasPacket(receiveBuff, currReceivePos);	// Bool if SOP is found
+//                remainingBuffLen =											// Remaining characters until first SOP (or end of buffer)
+//                        SOPFound ?
+//                                indexOfSOP(receiveBuff, currReceivePos) - currReceivePos:
+//                                receiveBuff.length - currReceivePos;
+//
+//                // Error check length. Discard this data if wrong. Grab next
+//                if ((SOPFound && currBuffPos + remainingBuffLen != PACKET_BUFF_LENGTH) ||		// SOP found and incorrect length
+//                        (!SOPFound && currBuffPos + remainingBuffLen > PACKET_BUFF_LENGTH)){	// or buffer length appended is too long
+//
+//                    // Debug
+//                    if (DEBUG) displayMessage(TV_console, "Receiving error: Invalid packet length: " + (currBuffPos + remainingBuffLen) + "\n");
+//
+//                    // Discard this data
+//                    currReceivePos = indexOfSOP(receiveBuff, currReceivePos) + 1;
+//
+//                    // Reset lengths/buffer
+//                    currBuffPos = 0;
+//
+//                    // Parse for next packet
+//                    continue;
+//                }
+//
+//                // Compute bytes to copy and copy buffer over
+//                int numBytesCopied = Math.min(PACKET_BUFF_LENGTH - currBuffPos, remainingBuffLen);
+//                System.arraycopy(receiveBuff, currReceivePos, packetBuff, currBuffPos, numBytesCopied);
+//
+//                // Recalculate buffer position
+//                currReceivePos += numBytesCopied;
+//                currBuffPos += numBytesCopied;
+//
+//                // Full & valid length buffer check
+//                // if full buffer, parse for floats and add to packet
+//                if (SOPFound && currBuffPos == PACKET_BUFF_LENGTH){
+//                    // Create new packet
+//                    AccelSample currSample = new AccelSample();
+////                    currSample.time = Calendar.getInstance().getTimeInMillis();
+//                    currSample.time = ByteBuffer.wrap(packetBuff, 0, PACKET_BYTES_LONG).order(ByteOrder.LITTLE_ENDIAN) + startTimeOffset;
+//                    currSample.aX = ByteBuffer.wrap(packetBuff, PACKET_BYTES_FLOAT * 0 + PACKET_BYTES_LONG, PACKET_BYTES_FLOAT).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+//                    currSample.aY = ByteBuffer.wrap(packetBuff, PACKET_BYTES_FLOAT * 1 + PACKET_BYTES_LONG, PACKET_BYTES_FLOAT).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+//                    currSample.aZ = ByteBuffer.wrap(packetBuff, PACKET_BYTES_FLOAT * 2 + PACKET_BYTES_LONG, PACKET_BYTES_FLOAT).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+//
+//                    // TODO: Check for data within bounds
+//
+//                    // Add current sample to array
+//                    accelSamples.add(currSample);
+//
+//                    // Frame skip
+//                    if (LC_oscope_currentFrameskip > LC_OSCOPE_FRAMESKIP) {
+//                        LC_oscope_currentFrameskip = 0;
+//
+//                        // Update graph
+//                        updateChart(currSample);
+//                    } else {
+//                        LC_oscope_currentFrameskip++;
+//                    }
+//
+//                    // Reset lengths/buffer
+//                    currReceivePos++;		// Skip over SOP character
+//                    currBuffPos = 0;
+//                }
+//            } catch (Exception e){
+//                displayMessage(TV_console, "Recieve exception: " + e.getMessage() + "\n");
+//
+//                // On exception, discard this packet and reset buffer
+//                currReceivePos = indexOfSOP(receiveBuff, currReceivePos) + 1;
+//                currBuffPos = 0;
+//            }
+//        } while (currReceivePos < receiveBuff.length);
+//    }
 
     private static void stringMod(String s){
         s.concat(" world");
