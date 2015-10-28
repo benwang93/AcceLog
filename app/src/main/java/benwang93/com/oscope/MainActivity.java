@@ -304,15 +304,13 @@ displayMessage(TV_console, "findDevice()\n");
 
         // Set axes
         YAxis leftAxis = LC_oscope.getAxisLeft();
-        leftAxis.setAxisMaxValue(AXIS_MAX);
-        leftAxis.setAxisMinValue(AXIS_MIN);
         leftAxis.setAxisMaxValue(AXIS_MAX_OSCOPE);
         leftAxis.setAxisMinValue(AXIS_MIN_OSCOPE);
         leftAxis.setStartAtZero(false);
 
         YAxis rightAxis = LC_oscope.getAxisRight();
-        rightAxis.setAxisMaxValue(AXIS_MAX);
-        rightAxis.setAxisMinValue(AXIS_MIN);
+        rightAxis.setAxisMaxValue(AXIS_MAX_OSCOPE);
+        rightAxis.setAxisMinValue(AXIS_MIN_OSCOPE);
         rightAxis.setStartAtZero(false);
 
         ArrayList<String> xVals = new ArrayList<String>();
