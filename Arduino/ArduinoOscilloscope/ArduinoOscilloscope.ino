@@ -17,10 +17,6 @@
 */
 /**************************************************************************/
 
-//#include <Wire.h>
-//#include <Adafruit_MMA8451.h>
-//#include <Adafruit_Sensor.h>
-
 // Packet definitions
 const char PACKET_START = '{';
 const char PACKET_END   = '}';
@@ -32,85 +28,32 @@ const char PACKET_TYPE_OSCOPE = 'O';
 const int CH_A_PIN = 0;
 const int CH_B_PIN = 1;
 const int CH_C_PIN = 2;
+const int ADC_RANGE = 1024 /* ADC range */ / 5 /* Volt range */;
 
+const unsigned int BAUD_RATE = 57600;
 
-// Accelerometer object
-//Adafruit_MMA8451 mma = Adafruit_MMA8451();
+// Delay between samples
+const int SAMPLE_PERIOD_US = 0; // us
+
 
 void setup(void) {
-  Serial.begin(9600);
-//  
-//  Serial.println("Adafruit MMA8451 test!");
-//  
-//
-//  if (! mma.begin()) {
-//    Serial.println("Couldnt start");
-//    while (1);
-//  }
-//  Serial.println("MMA8451 found!");
-//  
-//  mma.setRange(MMA8451_RANGE_2_G);
-//  
-//  Serial.print("Range = "); Serial.print(2 << mma.getRange());  
-//  Serial.println("G");
-  
+  Serial.begin(BAUD_RATE);
 }
 
 void loop() {
   // Read the 'raw' data in 14-bit counts
 //  mma.read();
 
-    int chA = analogRead(CH_A_PIN);
-    int chB = analogRead(CH_B_PIN);
-    int chC = analogRead(CH_C_PIN);
+    unsigned long currTime = millis();
+    float chA = (float) analogRead(CH_A_PIN) / ADC_RANGE;
+    float chB = (float) analogRead(CH_B_PIN) / ADC_RANGE;
+    float chC = (float) analogRead(CH_C_PIN) / ADC_RANGE;
+
   
   // Send packet
-  Serial.print(PACKET_START); Serial.print(PACKET_TYPE_OSCOPE); Serial.print(PACKET_DELIM); Serial.print(chA); Serial.print(PACKET_DELIM); Serial.print(chB); Serial.print(PACKET_DELIM); Serial.print(chC); Serial.println(PACKET_END);
-//  Serial.print("X:\t"); Serial.print(mma.x); 
-//  Serial.print("\tY:\t"); Serial.print(mma.y); 
-//  Serial.print("\tZ:\t"); Serial.print(mma.z); 
-//  Serial.println();
-//
-//  /* Get a new sensor event */ 
-//  sensors_event_t event; 
-//  mma.getEvent(&event);
-//
-//  /* Display the results (acceleration is measured in m/s^2) */
-//  Serial.print("X: \t"); Serial.print(event.acceleration.x); Serial.print("\t");
-//  Serial.print("Y: \t"); Serial.print(event.acceleration.y); Serial.print("\t");
-//  Serial.print("Z: \t"); Serial.print(event.acceleration.z); Serial.print("\t");
-//  Serial.println("m/s^2 ");
-//  
-//  /* Get the orientation of the sensor */
-//  uint8_t o = mma.getOrientation();
-//  
-//  switch (o) {
-//    case MMA8451_PL_PUF: 
-//      Serial.println("Portrait Up Front");
-//      break;
-//    case MMA8451_PL_PUB: 
-//      Serial.println("Portrait Up Back");
-//      break;    
-//    case MMA8451_PL_PDF: 
-//      Serial.println("Portrait Down Front");
-//      break;
-//    case MMA8451_PL_PDB: 
-//      Serial.println("Portrait Down Back");
-//      break;
-//    case MMA8451_PL_LRF: 
-//      Serial.println("Landscape Right Front");
-//      break;
-//    case MMA8451_PL_LRB: 
-//      Serial.println("Landscape Right Back");
-//      break;
-//    case MMA8451_PL_LLF: 
-//      Serial.println("Landscape Left Front");
-//      break;
-//    case MMA8451_PL_LLB: 
-//      Serial.println("Landscape Left Back");
-//      break;
-//    }
-//  Serial.println();
-//  delay(500);
+  Serial.print(PACKET_START); Serial.write((byte*) &currTime, sizeof(unsigned long)); Serial.write((byte*) &chA, sizeof(float)); Serial.write((byte*) &chB, sizeof(float)); Serial.write((byte*) &chC, sizeof(float));
+
+  // Delay to not flood Android device
+  delayMicroseconds(SAMPLE_PERIOD_US);
   
 }
