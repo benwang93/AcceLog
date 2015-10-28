@@ -36,10 +36,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -51,6 +53,8 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+
+import org.w3c.dom.Text;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -222,6 +226,22 @@ displayMessage(TV_console, "findDevice()\n");
         // Grab UI elements
         TV_console = (TextView) findViewById(R.id.MainActivity_TextView_Console);
         TV_console.setMovementMethod(new ScrollingMovementMethod());
+
+        final EditText ET_frameskip = (EditText) findViewById(R.id.MainActivity_EditText_Frameskip);
+        ET_frameskip.setText("" + ArduinoCommunicatorService.LC_oscope_frameskip);
+        Button B_setFrameskip = (Button) findViewById(R.id.MainActivity_Button_SetFrameskip);
+        B_setFrameskip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    ArduinoCommunicatorService.LC_oscope_frameskip = Integer.parseInt(ET_frameskip.getText().toString());
+                    Toast.makeText(getApplicationContext(), "Frameskip set to " + ArduinoCommunicatorService.LC_oscope_frameskip, Toast.LENGTH_SHORT).show();
+                } catch (Exception e){
+                    Toast.makeText(getApplicationContext(), "Error setting frameskip", Toast.LENGTH_SHORT).show();
+                    ET_frameskip.setText("" + ArduinoCommunicatorService.LC_oscope_frameskip);
+                }
+            }
+        });
 
         LL_debugConsole = (LinearLayout) findViewById(R.id.MainActivity_LinearLayout_DebugConsole);
         LL_debugConsole.setVisibility(View.GONE);

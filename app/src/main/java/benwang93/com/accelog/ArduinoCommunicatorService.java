@@ -81,7 +81,8 @@ public class ArduinoCommunicatorService extends Service {
     private static int currBuffPos = 0;									// Current position in buffer
 
     // Frame skip for drawing graph
-    public static final int LC_OSCOPE_FRAMESKIP = 10;       // Number of frames to skip
+//    public static final int LC_OSCOPE_FRAMESKIP = 0;       // Number of frames to skip
+    public static int LC_oscope_frameskip = 10;            // Number of frames to skip
     public static int LC_oscope_currentFrameskip = 0;      // Counter for current frame
 
 
@@ -388,7 +389,7 @@ public class ArduinoCommunicatorService extends Service {
                     Log.d("AcceLog", "Added to accelSamples at pos " + (MainActivity.accelSamples.size()-1));
 
                     // Frame skip
-                    if (LC_oscope_currentFrameskip > LC_OSCOPE_FRAMESKIP) {
+                    if (LC_oscope_currentFrameskip > LC_oscope_frameskip) {
                         LC_oscope_currentFrameskip = 0;
 
                         Log.d("AcceLog", "Graphing at pos " + (MainActivity.accelSamples.size() - 1));
