@@ -34,6 +34,10 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 public class ArduinoCommunicatorService extends Service {
 
     private final static String TAG = "ArduinoCommunicatorService";
@@ -51,6 +55,39 @@ public class ArduinoCommunicatorService extends Service {
     final static String SEND_DATA_INTENT = "benwang93.com.accelog.intent.action.SEND_DATA";
     final static String DATA_SENT_INTERNAL_INTENT = "benwang93.com.accelog.internal.intent.action.DATA_SENT";
     final static String DATA_EXTRA = "benwang93.com.accelog.intent.extra.DATA";
+    final static String UPDATE_CHART_INTENT = "benwang93.com.accelog.intent.action.UPDATE_CHART";
+
+    private final static int BAUD_RATE = 57600;
+
+
+
+
+
+
+    // Packet specification
+    private static final char ACCEL_SOP = '{';
+//    private static final char ACCEL_DELIM = '\t';
+//    private static final char ACCEL_EOP = '}';
+
+    // Receive buffer definitions
+    final static int PACKET_NUM_LONGS = 1;                              // Number of longs (timestamp)
+    final static int PACKET_BYTES_LONG = 4;                             // Number of bytes in a long
+    final static int PACKET_BUFF_NUM_FLOATS = 3;						// Number of floats in packet
+    final static int PACKET_BYTES_FLOAT = 4;                            // Number of bytes in a float
+    final static int PACKET_BUFF_LENGTH =                               // Length of packet (3x float = 12 B)
+            PACKET_BUFF_NUM_FLOATS * PACKET_BYTES_FLOAT +
+                    PACKET_NUM_LONGS * PACKET_BYTES_LONG;
+    private static byte[] packetBuff = new byte[PACKET_BUFF_LENGTH];	// Buffer for packet
+    private static int currBuffPos = 0;									// Current position in buffer
+
+    // Frame skip for drawing graph
+//    public static final int LC_OSCOPE_FRAMESKIP = 0;       // Number of frames to skip
+    public static int LC_oscope_frameskip = 10;            // Number of frames to skip
+    public static int LC_oscope_currentFrameskip = 0;      // Counter for current frame
+
+
+
+
 
     @Override
     public IBinder onBind(Intent arg0) {
@@ -124,6 +161,18 @@ public class ArduinoCommunicatorService extends Service {
             lineEncodingRequest[0] = 0x00;
             lineEncodingRequest[1] = 0x4B;
             break;
+
+        case 57600:
+            lineEncodingRequest[0] = (byte) 0x00;
+            lineEncodingRequest[1] = (byte) 0xE1;
+            break;
+
+        case 115200:
+            lineEncodingRequest[0] = (byte) 0x00;
+            lineEncodingRequest[1] = (byte) 0xC2;
+            lineEncodingRequest[2] = (byte) 0x01;
+
+            break;
         }
 
         return lineEncodingRequest;
@@ -149,7 +198,7 @@ public class ArduinoCommunicatorService extends Service {
         // Set control line state
         mUsbConnection.controlTransfer(0x21, 0x22, 0, 0, null, 0, 0);
         // Set line encoding.
-        mUsbConnection.controlTransfer(0x21, 0x20, 0, 0, getLineEncoding(9600), 7, 0);
+        mUsbConnection.controlTransfer(0x21, 0x20, 0, 0, getLineEncoding(BAUD_RATE), 7, 0);
 
         for (int i = 0; i < usbInterface.getEndpointCount(); i++) {
             if (usbInterface.getEndpoint(i).getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
@@ -210,11 +259,7 @@ public class ArduinoCommunicatorService extends Service {
                     if (DEBUG) Log.d(TAG, "calling bulkTransfer() in");
                     final int len = mUsbConnection.bulkTransfer(mInUsbEndpoint, inBuffer, inBuffer.length, 0);
                     if (len > 0) {
-                        Intent intent = new Intent(DATA_RECEIVED_INTENT);
-                        byte[] buffer = new byte[len];
-                        System.arraycopy(inBuffer, 0, buffer, 0, len);
-                        intent.putExtra(DATA_EXTRA, buffer);
-                        sendBroadcast(intent);
+                        parseForPacket(inBuffer, len);
                     } else {
                         if (DEBUG) Log.i(TAG, "zero data read!");
                     }
@@ -262,5 +307,128 @@ public class ArduinoCommunicatorService extends Service {
             Looper.loop();
             if (DEBUG) Log.i(TAG, "sender thread stopped");
         }
+    }
+
+
+
+    // Call upon data receive to parse for floats to populate the x, y, and z axis acceleration
+    private void  parseForPacket(byte[] receiveBuff, int receiveBuffLen){
+        boolean SOPFound = false;		// Check for if buffer contains a SOP
+        int remainingBuffLen = -1;		// Number of bytes left in receive buffer before next SOP or end of buffer
+        int currReceivePos = 0;			// Current position in receive buffer
+
+        try {
+            Log.d("AcceLog", "Parsing buffer of len: " + receiveBuffLen + " str:\'" + new String(receiveBuff, 0, receiveBuffLen, "US-ASCII") + "\'");
+        } catch (UnsupportedEncodingException e){
+            Log.d("AcceLog", "Parsing buffer of len: " + receiveBuffLen);
+        }
+        // Exit if not recording
+        if (!MainActivity.recordingIsStarted){
+            Log.d("AcceLog", "Recording not started");
+            return;
+        }
+
+        // Repeat while data available
+        do {
+            try {
+                // Initialize
+                SOPFound = bufferHasPacket(receiveBuff, receiveBuffLen, currReceivePos);	// Bool if SOP is found
+                remainingBuffLen =											// Remaining characters until first SOP (or end of buffer)
+                        SOPFound ?
+                                indexOfSOP(receiveBuff, receiveBuffLen, currReceivePos) - currReceivePos:
+                                receiveBuffLen - currReceivePos;
+                Log.d("AcceLog", "Parsed: SOP?" + SOPFound + " Len:" + remainingBuffLen + " str:\'" + new String(receiveBuff, currReceivePos, remainingBuffLen, "US-ASCII") + "\'");
+
+                // Error check length. Discard this data if wrong. Grab next
+                if ((SOPFound && currBuffPos + remainingBuffLen != PACKET_BUFF_LENGTH) ||		// SOP found and incorrect length
+                        (!SOPFound && currBuffPos + remainingBuffLen > PACKET_BUFF_LENGTH)){	// or buffer length appended is too long
+
+                    // Debug
+//                    if (DEBUG) displayMessage(TV_console, "Receiving error: Invalid packet length: " + (currBuffPos + remainingBuffLen) + "\n");
+                    Log.d("AcceLog", "Receiving error: Invalid packet length: " + (currBuffPos + remainingBuffLen));
+
+                    // Discard this data
+                    if (SOPFound)
+                        currReceivePos = indexOfSOP(receiveBuff, receiveBuffLen, currReceivePos) + 1;
+                    else
+                        currReceivePos = receiveBuffLen;
+
+                    // Reset lengths/buffer
+                    currBuffPos = 0;
+
+                    // Parse for next packet
+                    continue;
+                }
+
+                // Compute bytes to copy and copy buffer over
+                int numBytesCopied = Math.min(PACKET_BUFF_LENGTH - currBuffPos, remainingBuffLen);
+                System.arraycopy(receiveBuff, currReceivePos, packetBuff, currBuffPos, numBytesCopied);
+
+                // Recalculate buffer position
+                currReceivePos += numBytesCopied;
+                currBuffPos += numBytesCopied;
+
+                // Full & valid length buffer check
+                // if full buffer, parse for floats and add to packet
+                if (SOPFound && currBuffPos == PACKET_BUFF_LENGTH){
+                    Log.d("AcceLog", "Packet found!");
+
+                    // Create new packet
+                    AccelSample currSample = new AccelSample();
+//                    currSample.time = Calendar.getInstance().getTimeInMillis();
+                    currSample.time = ByteBuffer.wrap(packetBuff, 0, PACKET_BYTES_LONG).order(ByteOrder.LITTLE_ENDIAN).getInt() + MainActivity.startTimeOffset;
+                    currSample.aX = ByteBuffer.wrap(packetBuff, PACKET_BYTES_FLOAT * 0 + PACKET_BYTES_LONG, PACKET_BYTES_FLOAT).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+                    currSample.aY = ByteBuffer.wrap(packetBuff, PACKET_BYTES_FLOAT * 1 + PACKET_BYTES_LONG, PACKET_BYTES_FLOAT).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+                    currSample.aZ = ByteBuffer.wrap(packetBuff, PACKET_BYTES_FLOAT * 2 + PACKET_BYTES_LONG, PACKET_BYTES_FLOAT).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+
+                    // TODO: Check for data within bounds
+
+                    // Add current sample to array
+                    MainActivity.accelSamples.add(currSample);
+
+                    Log.d("AcceLog", "Added to accelSamples at pos " + (MainActivity.accelSamples.size()-1));
+
+                    // Frame skip
+                    if (LC_oscope_currentFrameskip > LC_oscope_frameskip) {
+                        LC_oscope_currentFrameskip = 0;
+
+                        Log.d("AcceLog", "Graphing at pos " + (MainActivity.accelSamples.size() - 1));
+
+                        Intent intent = new Intent(UPDATE_CHART_INTENT);
+                        intent.putExtra(DATA_EXTRA, MainActivity.accelSamples.size() - 1);
+                        sendBroadcast(intent);
+                    } else {
+                        LC_oscope_currentFrameskip++;
+                    }
+
+                    // Reset lengths/buffer
+                    currReceivePos++;		// Skip over SOP character
+                    currBuffPos = 0;
+                }
+            } catch (Exception e){
+//                displayMessage(TV_console, "Recieve exception: " + e.getMessage() + "\n");
+
+                // On exception, discard this packet and reset buffer
+                currReceivePos = indexOfSOP(receiveBuff, receiveBuffLen, currReceivePos) + 1;
+                currBuffPos = 0;
+            }
+        } while (currReceivePos < receiveBuffLen);
+    }
+
+    // Returns index of next SOP starting from startIndex, or -1 if no SOP found
+    private static int indexOfSOP(byte[] receiveBuff, int receiveBuffLen, int startIndex){
+        for (int i = startIndex; i < receiveBuffLen; i++){
+            if (receiveBuff[i] == ACCEL_SOP){
+                return i;
+            }
+        }
+
+        // Default value
+        return -1;
+    }
+
+    // Returns true if buffer contains a SOP after startIndex
+    private static boolean bufferHasPacket(byte[] receiveBuff, int receiveBuffLen, int startIndex){
+        return indexOfSOP(receiveBuff, receiveBuffLen, startIndex) != -1;
     }
 }
