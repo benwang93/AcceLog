@@ -8,3 +8,5 @@
 /PCB/*.s#*
 /PCB/*.b#*
 /PCB/*.l#*
+/PCB/*.job
+/PCB/*.pro

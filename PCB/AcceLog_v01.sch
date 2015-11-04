@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="7.4.0">
+<eagle version="7.3.0">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -4501,7 +4501,7 @@ Pogo pins- HW-11044</description>
 <part name="+3V4" library="supply1" deviceset="+3V3" device=""/>
 <part name="C9" library="SparkFun-Passives" deviceset="CAP" device="0603-CAP" value="0.1uF"/>
 <part name="JACCEL" library="SparkFun-Connectors" deviceset="M08" device="LOCK"/>
-<part name="U$1" library="AcceLogLib" deviceset="ABLS7M2" device=""/>
+<part name="XTAL" library="AcceLogLib" deviceset="ABLS7M2" device=""/>
 <part name="C10" library="SparkFun-Passives" deviceset="CAP" device="0603-CAP" value="18pF"/>
 <part name="C11" library="SparkFun-Passives" deviceset="CAP" device="0603-CAP" value="18pF"/>
 <part name="SUPPLY10" library="supply2" deviceset="GND" device=""/>
@@ -4566,7 +4566,7 @@ Pogo pins- HW-11044</description>
 <instance part="+3V4" gate="G$1" x="322.58" y="48.26"/>
 <instance part="C9" gate="G$1" x="271.78" y="48.26"/>
 <instance part="JACCEL" gate="G$1" x="287.02" y="20.32" rot="MR180"/>
-<instance part="U$1" gate="G$1" x="157.48" y="45.72" rot="R180"/>
+<instance part="XTAL" gate="G$1" x="157.48" y="45.72" rot="R180"/>
 <instance part="C10" gate="G$1" x="149.86" y="40.64"/>
 <instance part="C11" gate="G$1" x="165.1" y="40.64"/>
 <instance part="SUPPLY10" gate="GND" x="157.48" y="33.02"/>
@@ -4603,6 +4603,7 @@ Pogo pins- HW-11044</description>
 <wire x1="106.68" y1="116.84" x2="106.68" y2="119.38" width="0.1524" layer="91"/>
 <wire x1="106.68" y1="119.38" x2="99.06" y2="119.38" width="0.1524" layer="91"/>
 <junction x="99.06" y="119.38"/>
+<label x="104.14" y="119.38" size="1.778" layer="95"/>
 </segment>
 <segment>
 <pinref part="JFTDI" gate="G$1" pin="4"/>
@@ -4619,6 +4620,7 @@ Pogo pins- HW-11044</description>
 <pinref part="P+2" gate="1" pin="+5V"/>
 <wire x1="20.32" y1="68.58" x2="38.1" y2="68.58" width="0.1524" layer="91"/>
 <wire x1="38.1" y1="68.58" x2="38.1" y2="71.12" width="0.1524" layer="91"/>
+<label x="22.86" y="68.58" size="1.778" layer="95"/>
 </segment>
 <segment>
 <pinref part="ICSP" gate="G$1" pin="2"/>
@@ -4748,6 +4750,7 @@ Pogo pins- HW-11044</description>
 <wire x1="279.4" y1="55.88" x2="261.62" y2="55.88" width="0.1524" layer="91"/>
 <junction x="279.4" y="55.88"/>
 <junction x="261.62" y="55.88"/>
+<label x="269.24" y="55.88" size="1.778" layer="95"/>
 </segment>
 <segment>
 <pinref part="+3V2" gate="G$1" pin="+3V3"/>
@@ -4756,6 +4759,7 @@ Pogo pins- HW-11044</description>
 <wire x1="71.12" y1="116.84" x2="58.42" y2="116.84" width="0.1524" layer="91"/>
 <pinref part="C2" gate="G$1" pin="+"/>
 <junction x="71.12" y="116.84"/>
+<label x="58.42" y="116.84" size="1.778" layer="95"/>
 </segment>
 <segment>
 <pinref part="R3" gate="G$1" pin="2"/>
@@ -4789,8 +4793,29 @@ Pogo pins- HW-11044</description>
 <pinref part="R4" gate="G$1" pin="2"/>
 <wire x1="276.86" y1="78.74" x2="276.86" y2="81.28" width="0.1524" layer="91"/>
 </segment>
+<segment>
+<pinref part="U2" gate="U$1" pin="3V3OUT"/>
+<pinref part="U2" gate="U$1" pin="VCCIO"/>
+<wire x1="99.06" y1="45.72" x2="101.6" y2="45.72" width="0.1524" layer="91"/>
+<wire x1="101.6" y1="48.26" x2="99.06" y2="48.26" width="0.1524" layer="91"/>
+<wire x1="99.06" y1="48.26" x2="99.06" y2="45.72" width="0.1524" layer="91"/>
+<junction x="99.06" y="45.72"/>
+<wire x1="99.06" y1="45.72" x2="99.06" y2="33.02" width="0.1524" layer="91"/>
+<pinref part="U2" gate="U$1" pin="!RESET"/>
+<wire x1="99.06" y1="33.02" x2="101.6" y2="33.02" width="0.1524" layer="91"/>
+<pinref part="C8" gate="G$1" pin="1"/>
+<wire x1="96.52" y1="33.02" x2="99.06" y2="33.02" width="0.1524" layer="91"/>
+<junction x="99.06" y="33.02"/>
+<pinref part="U2" gate="U$1" pin="VCC"/>
+<wire x1="101.6" y1="50.8" x2="99.06" y2="50.8" width="0.1524" layer="91"/>
+<wire x1="99.06" y1="50.8" x2="99.06" y2="48.26" width="0.1524" layer="91"/>
+<junction x="99.06" y="48.26"/>
+<pinref part="+3V3" gate="G$1" pin="+3V3"/>
+<wire x1="99.06" y1="53.34" x2="99.06" y2="50.8" width="0.1524" layer="91"/>
+<junction x="99.06" y="50.8"/>
+</segment>
 </net>
-<net name="N$1" class="0">
+<net name="TXD" class="0">
 <segment>
 <pinref part="U2" gate="U$1" pin="TXD"/>
 <wire x1="127" y1="50.8" x2="144.78" y2="50.8" width="0.1524" layer="91"/>
@@ -4799,9 +4824,11 @@ Pogo pins- HW-11044</description>
 <wire x1="231.14" y1="10.16" x2="231.14" y2="53.34" width="0.1524" layer="91"/>
 <pinref part="U3" gate="U$1" pin="PD0(RXD)"/>
 <wire x1="231.14" y1="53.34" x2="215.9" y2="53.34" width="0.1524" layer="91"/>
+<label x="129.54" y="50.8" size="1.778" layer="95"/>
+<label x="218.44" y="53.34" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="N$2" class="0">
+<net name="RXD" class="0">
 <segment>
 <pinref part="U3" gate="U$1" pin="PD1(TXD)"/>
 <wire x1="215.9" y1="50.8" x2="228.6" y2="50.8" width="0.1524" layer="91"/>
@@ -4810,9 +4837,11 @@ Pogo pins- HW-11044</description>
 <wire x1="142.24" y1="7.62" x2="142.24" y2="48.26" width="0.1524" layer="91"/>
 <pinref part="U2" gate="U$1" pin="RXD"/>
 <wire x1="142.24" y1="48.26" x2="127" y2="48.26" width="0.1524" layer="91"/>
+<label x="129.54" y="48.26" size="1.778" layer="95"/>
+<label x="218.44" y="50.8" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="N$3" class="0">
+<net name="D-" class="0">
 <segment>
 <pinref part="JUSB" gate="G$1" pin="D-"/>
 <wire x1="20.32" y1="66.04" x2="45.72" y2="66.04" width="0.1524" layer="91"/>
@@ -4822,9 +4851,10 @@ Pogo pins- HW-11044</description>
 <wire x1="45.72" y1="60.96" x2="45.72" y2="66.04" width="0.1524" layer="91"/>
 <junction x="45.72" y="66.04"/>
 <pinref part="R1" gate="G$1" pin="2"/>
+<label x="22.86" y="66.04" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="N$6" class="0">
+<net name="D+" class="0">
 <segment>
 <pinref part="JUSB" gate="G$1" pin="D+"/>
 <wire x1="76.2" y1="50.8" x2="76.2" y2="63.5" width="0.1524" layer="91"/>
@@ -4834,6 +4864,7 @@ Pogo pins- HW-11044</description>
 <wire x1="55.88" y1="60.96" x2="55.88" y2="63.5" width="0.1524" layer="91"/>
 <junction x="55.88" y="63.5"/>
 <pinref part="R2" gate="G$1" pin="2"/>
+<label x="22.86" y="63.5" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="N$7" class="0">
@@ -4843,20 +4874,22 @@ Pogo pins- HW-11044</description>
 <wire x1="60.96" y1="106.68" x2="58.42" y2="106.68" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$9" class="0">
+<net name="USBDM" class="0">
 <segment>
 <pinref part="U2" gate="U$1" pin="USBDM"/>
 <pinref part="R1" gate="G$1" pin="1"/>
 <wire x1="83.82" y1="53.34" x2="83.82" y2="40.64" width="0.1524" layer="91"/>
 <wire x1="83.82" y1="40.64" x2="101.6" y2="40.64" width="0.1524" layer="91"/>
+<label x="86.36" y="40.64" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="N$8" class="0">
+<net name="USBDP" class="0">
 <segment>
 <pinref part="R2" gate="G$1" pin="1"/>
 <pinref part="U2" gate="U$1" pin="USBDP"/>
 <wire x1="101.6" y1="38.1" x2="76.2" y2="38.1" width="0.1524" layer="91"/>
 <wire x1="76.2" y1="38.1" x2="76.2" y2="40.64" width="0.1524" layer="91"/>
+<label x="86.36" y="38.1" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="DTR" class="0">
@@ -4938,6 +4971,7 @@ Pogo pins- HW-11044</description>
 <pinref part="R5" gate="G$1" pin="1"/>
 <wire x1="266.7" y1="71.12" x2="266.7" y2="66.04" width="0.1524" layer="91"/>
 <junction x="266.7" y="66.04"/>
+<label x="218.44" y="66.04" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="SCL" class="0">
@@ -4957,6 +4991,7 @@ Pogo pins- HW-11044</description>
 <wire x1="276.86" y1="63.5" x2="215.9" y2="63.5" width="0.1524" layer="91"/>
 <wire x1="276.86" y1="68.58" x2="276.86" y2="63.5" width="0.1524" layer="91"/>
 <junction x="276.86" y="63.5"/>
+<label x="218.44" y="63.5" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="INT1" class="0">
@@ -4990,29 +5025,9 @@ Pogo pins- HW-11044</description>
 <label x="127" y="43.18" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="N$5" class="0">
-<segment>
-<pinref part="U2" gate="U$1" pin="3V3OUT"/>
-<pinref part="U2" gate="U$1" pin="VCCIO"/>
-<wire x1="99.06" y1="45.72" x2="101.6" y2="45.72" width="0.1524" layer="91"/>
-<wire x1="101.6" y1="48.26" x2="99.06" y2="48.26" width="0.1524" layer="91"/>
-<wire x1="99.06" y1="48.26" x2="99.06" y2="45.72" width="0.1524" layer="91"/>
-<junction x="99.06" y="45.72"/>
-<wire x1="99.06" y1="45.72" x2="99.06" y2="33.02" width="0.1524" layer="91"/>
-<pinref part="U2" gate="U$1" pin="!RESET"/>
-<wire x1="99.06" y1="33.02" x2="101.6" y2="33.02" width="0.1524" layer="91"/>
-<pinref part="C8" gate="G$1" pin="1"/>
-<wire x1="96.52" y1="33.02" x2="99.06" y2="33.02" width="0.1524" layer="91"/>
-<junction x="99.06" y="33.02"/>
-<pinref part="U2" gate="U$1" pin="VCC"/>
-<wire x1="101.6" y1="50.8" x2="99.06" y2="50.8" width="0.1524" layer="91"/>
-<wire x1="99.06" y1="50.8" x2="99.06" y2="48.26" width="0.1524" layer="91"/>
-<junction x="99.06" y="48.26"/>
-</segment>
-</net>
 <net name="N$10" class="0">
 <segment>
-<pinref part="U$1" gate="G$1" pin="P$2"/>
+<pinref part="XTAL" gate="G$1" pin="P$2"/>
 <pinref part="U3" gate="U$1" pin="PB6(XTAL1/TOSC1)"/>
 <wire x1="149.86" y1="45.72" x2="149.86" y2="50.8" width="0.1524" layer="91"/>
 <wire x1="149.86" y1="50.8" x2="167.64" y2="50.8" width="0.1524" layer="91"/>
@@ -5023,7 +5038,7 @@ Pogo pins- HW-11044</description>
 <net name="N$12" class="0">
 <segment>
 <pinref part="U3" gate="U$1" pin="PB7(XTAL2/TOSC2)"/>
-<pinref part="U$1" gate="G$1" pin="P$1"/>
+<pinref part="XTAL" gate="G$1" pin="P$1"/>
 <wire x1="167.64" y1="45.72" x2="165.1" y2="45.72" width="0.1524" layer="91"/>
 <pinref part="C11" gate="G$1" pin="1"/>
 <junction x="165.1" y="45.72"/>
