@@ -1,0 +1,59 @@
+AcceLog Design Documentation
+============================
+
+2015-12-14
+----------
+
+Status to date:
+- Completed AcceLog v00 board design
+	- Soldered 2 boards, one working
+	- Previous specs
+		- 3.3V board supply
+		- 16 Mhz crystal frequency
+		- 150mA LDO
+
+V01 Design:
+- Hardware features
+	- MicroSD card slot
+	- Rechargable battery
+		- Li-ion LIR2450 battery with PMIC
+		- Li-ion battery options w/o PMIC
+	- LED status indicators
+		- Power (to microcontroller)
+		- Charging
+		- Recording
+		- Error/status
+	- Buttons
+		- Start/stop recording
+		- Power (sliding switch?)
+	- Power supply
+		- PMIC/voltage regulator 1 (to battery)
+		- Voltage regulator 2 (to proc)
+			- Unless PMIC contains 2nd voltage regulator
+	- Processor & Oscillator
+		- 2.7V - 10MHz - 0.5mA
+			- This sounds like a good one to try next. Plus can run battery down to lower voltage
+		- 3.3V - 16MHz - 1-1.5mA
+			- Previous design
+	- USB
+		- PC detection:
+			- 5V line to digital input
+			- FTDI maybe has pin for connected?
+		- Can still use FT232, however no USB mass storage
+		- Mass storage option would require something like ATMEGA16u2, however, no Arduino support...
+- Software features
+	- MicroSD appear over USB?
+	- FAT or exFAT filesystem
+		- FAT would only work for files up to 4GB. Might be an issue depending on recording length. This doesn't influence hardware design though
+- Hardware implementation
+	- MicroSD
+		- Push-pull type socket
+
+- Tasks:
+	- Hardware
+		- Design MicroSD footprint
+		- Add switches
+		- Add power supply
+	- Software
+		- How to change Atmega328's frequency (burn fuse?)
+		
