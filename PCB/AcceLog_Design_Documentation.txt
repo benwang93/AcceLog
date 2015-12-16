@@ -35,6 +35,9 @@ V01 Design:
 			- This sounds like a good one to try next. Plus can run battery down to lower voltage
 		- 3.3V - 16MHz - 1-1.5mA
 			- Previous design
+		- Looking into using ATmega 32u4 for USB capabilities
+			- For 3.3V/2.7V board, have to step down 5V VBUS to 3.3V/2.7V, but still route VBUS into the USB part of chip
+			- This will eliminate need for FTDI. Maybe not more expensive in the end
 	- USB
 		- PC detection:
 			- 5V line to digital input

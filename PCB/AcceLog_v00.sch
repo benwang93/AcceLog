@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="7.3.0">
+<eagle version="7.4.0">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -12539,6 +12539,11 @@ Standard schematic elements and footprints for 5mm, 3mm, 1206, and 0603 sized LE
 <part name="SUPPLY6" library="supply2" deviceset="GND" device=""/>
 <part name="U5" library="SparkFun-Connectors" deviceset="USD-SOCKET" device="NEW"/>
 <part name="C3" library="SparkFun-Passives" deviceset="CAP" device="0603-CAP" value="0.1uF"/>
+<part name="SUPPLY14" library="supply2" deviceset="GND" device=""/>
+<part name="+3V10" library="supply1" deviceset="+3V3" device=""/>
+<part name="C14" library="SparkFun-Passives" deviceset="CAP" device="0603-CAP" value="0.1uF"/>
+<part name="+3V11" library="supply1" deviceset="+3V3" device=""/>
+<part name="SUPPLY15" library="supply2" deviceset="GND" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -12565,7 +12570,7 @@ Standard schematic elements and footprints for 5mm, 3mm, 1206, and 0603 sized LE
 <wire x1="236.22" y1="2.54" x2="236.22" y2="33.02" width="0.1524" layer="97"/>
 <text x="268.478" y="1.27" size="1.778" layer="97" rot="R180">Breakout jacks (optional)</text>
 <text x="58.42" y="106.68" size="1.778" layer="97">NC</text>
-<text x="246.38" y="-35.56" size="1.778" layer="94" font="fixed">LEDs
+<text x="246.38" y="-43.18" size="1.778" layer="94" font="fixed">LEDs
 ====
 PWR   REC   CHRG  ERR   State
 ----  ----  ----  ----  --------------
@@ -12574,6 +12579,16 @@ PWR   REC   CHRG  ERR   State
   1     1     0     0   On, recording, not charging
   1     1     1     0   On, recording, charging
   1     0     0     0   On, error</text>
+<wire x1="101.6" y1="-5.08" x2="175.26" y2="-5.08" width="0.1524" layer="96"/>
+<wire x1="175.26" y1="-5.08" x2="175.26" y2="-58.42" width="0.1524" layer="96"/>
+<wire x1="175.26" y1="-58.42" x2="101.6" y2="-58.42" width="0.1524" layer="96"/>
+<wire x1="101.6" y1="-58.42" x2="101.6" y2="-5.08" width="0.1524" layer="96"/>
+<text x="104.14" y="-15.24" size="1.778" layer="96">to D8 pin</text>
+<text x="104.14" y="-17.78" size="1.778" layer="96">or D10 in most libs</text>
+<wire x1="185.42" y1="-5.08" x2="320.04" y2="-5.08" width="0.1524" layer="96"/>
+<wire x1="320.04" y1="-5.08" x2="320.04" y2="-58.42" width="0.1524" layer="96"/>
+<wire x1="320.04" y1="-58.42" x2="185.42" y2="-58.42" width="0.1524" layer="96"/>
+<wire x1="185.42" y1="-58.42" x2="185.42" y2="-5.08" width="0.1524" layer="96"/>
 </plain>
 <instances>
 <instance part="U1" gate="G$1" x="289.56" y="48.26"/>
@@ -12630,17 +12645,22 @@ PWR   REC   CHRG  ERR   State
 <instance part="SUPPLY13" gate="GND" x="147.32" y="104.14"/>
 <instance part="+3V9" gate="G$1" x="71.12" y="33.02"/>
 <instance part="C17" gate="G$1" x="60.96" y="20.32"/>
-<instance part="LED_PWR" gate="G$1" x="210.82" y="-7.62" rot="R90"/>
-<instance part="LED_REC" gate="G$1" x="210.82" y="-17.78" rot="R90"/>
-<instance part="LED_CHRG" gate="G$1" x="210.82" y="-27.94" rot="R90"/>
-<instance part="LED_ERR" gate="G$1" x="210.82" y="-38.1" rot="R90"/>
-<instance part="R6" gate="G$1" x="223.52" y="-7.62" rot="R180"/>
-<instance part="R7" gate="G$1" x="223.52" y="-17.78" rot="R180"/>
-<instance part="R8" gate="G$1" x="223.52" y="-27.94" rot="R180"/>
-<instance part="R9" gate="G$1" x="223.52" y="-38.1" rot="R180"/>
-<instance part="SUPPLY6" gate="GND" x="236.22" y="-43.18"/>
-<instance part="U5" gate="G$1" x="152.4" y="-20.32"/>
+<instance part="LED_PWR" gate="G$1" x="210.82" y="-15.24" rot="R90"/>
+<instance part="LED_REC" gate="G$1" x="210.82" y="-25.4" rot="R90"/>
+<instance part="LED_CHRG" gate="G$1" x="210.82" y="-35.56" rot="R90"/>
+<instance part="LED_ERR" gate="G$1" x="210.82" y="-45.72" rot="R90"/>
+<instance part="R6" gate="G$1" x="223.52" y="-15.24" rot="R180"/>
+<instance part="R7" gate="G$1" x="223.52" y="-25.4" rot="R180"/>
+<instance part="R8" gate="G$1" x="223.52" y="-35.56" rot="R180"/>
+<instance part="R9" gate="G$1" x="223.52" y="-45.72" rot="R180"/>
+<instance part="SUPPLY6" gate="GND" x="236.22" y="-50.8"/>
+<instance part="U5" gate="G$1" x="152.4" y="-27.94"/>
 <instance part="C3" gate="G$1" x="144.78" y="66.04" rot="R180"/>
+<instance part="SUPPLY14" gate="GND" x="137.16" y="-50.8"/>
+<instance part="+3V10" gate="G$1" x="139.7" y="-10.16"/>
+<instance part="C14" gate="G$1" x="121.92" y="-43.18"/>
+<instance part="+3V11" gate="G$1" x="121.92" y="-33.02"/>
+<instance part="SUPPLY15" gate="GND" x="121.92" y="-50.8"/>
 </instances>
 <busses>
 </busses>
@@ -12809,21 +12829,48 @@ PWR   REC   CHRG  ERR   State
 </segment>
 <segment>
 <pinref part="R6" gate="G$1" pin="1"/>
-<wire x1="228.6" y1="-7.62" x2="236.22" y2="-7.62" width="0.1524" layer="91"/>
-<wire x1="236.22" y1="-7.62" x2="236.22" y2="-17.78" width="0.1524" layer="91"/>
+<wire x1="228.6" y1="-15.24" x2="236.22" y2="-15.24" width="0.1524" layer="91"/>
+<wire x1="236.22" y1="-15.24" x2="236.22" y2="-25.4" width="0.1524" layer="91"/>
 <pinref part="R9" gate="G$1" pin="1"/>
-<wire x1="236.22" y1="-17.78" x2="236.22" y2="-27.94" width="0.1524" layer="91"/>
-<wire x1="236.22" y1="-27.94" x2="236.22" y2="-38.1" width="0.1524" layer="91"/>
-<wire x1="236.22" y1="-38.1" x2="236.22" y2="-40.64" width="0.1524" layer="91"/>
-<wire x1="228.6" y1="-38.1" x2="236.22" y2="-38.1" width="0.1524" layer="91"/>
-<junction x="236.22" y="-38.1"/>
+<wire x1="236.22" y1="-25.4" x2="236.22" y2="-35.56" width="0.1524" layer="91"/>
+<wire x1="236.22" y1="-35.56" x2="236.22" y2="-45.72" width="0.1524" layer="91"/>
+<wire x1="236.22" y1="-45.72" x2="236.22" y2="-48.26" width="0.1524" layer="91"/>
+<wire x1="228.6" y1="-45.72" x2="236.22" y2="-45.72" width="0.1524" layer="91"/>
+<junction x="236.22" y="-45.72"/>
 <pinref part="R8" gate="G$1" pin="1"/>
-<wire x1="228.6" y1="-27.94" x2="236.22" y2="-27.94" width="0.1524" layer="91"/>
-<junction x="236.22" y="-27.94"/>
+<wire x1="228.6" y1="-35.56" x2="236.22" y2="-35.56" width="0.1524" layer="91"/>
+<junction x="236.22" y="-35.56"/>
 <pinref part="R7" gate="G$1" pin="1"/>
-<wire x1="228.6" y1="-17.78" x2="236.22" y2="-17.78" width="0.1524" layer="91"/>
-<junction x="236.22" y="-17.78"/>
+<wire x1="228.6" y1="-25.4" x2="236.22" y2="-25.4" width="0.1524" layer="91"/>
+<junction x="236.22" y="-25.4"/>
 <pinref part="SUPPLY6" gate="GND" pin="GND"/>
+</segment>
+<segment>
+<pinref part="U5" gate="G$1" pin="SHIELD@1"/>
+<wire x1="144.78" y1="-38.1" x2="137.16" y2="-38.1" width="0.1524" layer="91"/>
+<wire x1="137.16" y1="-38.1" x2="137.16" y2="-40.64" width="0.1524" layer="91"/>
+<pinref part="U5" gate="G$1" pin="CD2"/>
+<wire x1="137.16" y1="-40.64" x2="137.16" y2="-43.18" width="0.1524" layer="91"/>
+<wire x1="137.16" y1="-43.18" x2="137.16" y2="-45.72" width="0.1524" layer="91"/>
+<wire x1="137.16" y1="-45.72" x2="137.16" y2="-48.26" width="0.1524" layer="91"/>
+<wire x1="144.78" y1="-45.72" x2="137.16" y2="-45.72" width="0.1524" layer="91"/>
+<junction x="137.16" y="-45.72"/>
+<pinref part="U5" gate="G$1" pin="SHIELD@3"/>
+<wire x1="144.78" y1="-43.18" x2="137.16" y2="-43.18" width="0.1524" layer="91"/>
+<junction x="137.16" y="-43.18"/>
+<pinref part="U5" gate="G$1" pin="CD1"/>
+<wire x1="144.78" y1="-40.64" x2="137.16" y2="-40.64" width="0.1524" layer="91"/>
+<junction x="137.16" y="-40.64"/>
+<pinref part="U5" gate="G$1" pin="GND"/>
+<wire x1="144.78" y1="-27.94" x2="137.16" y2="-27.94" width="0.1524" layer="91"/>
+<wire x1="137.16" y1="-38.1" x2="137.16" y2="-27.94" width="0.1524" layer="91"/>
+<junction x="137.16" y="-38.1"/>
+<pinref part="SUPPLY14" gate="GND" pin="GND"/>
+</segment>
+<segment>
+<pinref part="SUPPLY15" gate="GND" pin="GND"/>
+<pinref part="C14" gate="G$1" pin="2"/>
+<wire x1="121.92" y1="-48.26" x2="121.92" y2="-45.72" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="+3V3" class="0">
@@ -12907,6 +12954,17 @@ PWR   REC   CHRG  ERR   State
 <wire x1="81.28" y1="25.4" x2="81.28" y2="27.94" width="0.1524" layer="91"/>
 <label x="78.74" y="27.94" size="1.778" layer="95"/>
 <wire x1="71.12" y1="27.94" x2="81.28" y2="27.94" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="U5" gate="G$1" pin="VCC"/>
+<wire x1="144.78" y1="-22.86" x2="139.7" y2="-22.86" width="0.1524" layer="91"/>
+<wire x1="139.7" y1="-22.86" x2="139.7" y2="-12.7" width="0.1524" layer="91"/>
+<pinref part="+3V10" gate="G$1" pin="+3V3"/>
+</segment>
+<segment>
+<pinref part="C14" gate="G$1" pin="1"/>
+<pinref part="+3V11" gate="G$1" pin="+3V3"/>
+<wire x1="121.92" y1="-38.1" x2="121.92" y2="-35.56" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="TXD" class="0">
@@ -13159,6 +13217,11 @@ PWR   REC   CHRG  ERR   State
 <wire x1="215.9" y1="20.32" x2="223.52" y2="20.32" width="0.1524" layer="91"/>
 <label x="215.9" y="20.32" size="1.778" layer="95"/>
 </segment>
+<segment>
+<pinref part="U5" gate="G$1" pin="DO"/>
+<wire x1="144.78" y1="-30.48" x2="127" y2="-30.48" width="0.1524" layer="91"/>
+<label x="129.54" y="-30.48" size="1.778" layer="95"/>
+</segment>
 </net>
 <net name="SCK" class="0">
 <segment>
@@ -13171,6 +13234,11 @@ PWR   REC   CHRG  ERR   State
 <wire x1="223.52" y1="17.78" x2="215.9" y2="17.78" width="0.1524" layer="91"/>
 <label x="215.9" y="17.78" size="1.778" layer="95"/>
 </segment>
+<segment>
+<pinref part="U5" gate="G$1" pin="SCK"/>
+<wire x1="144.78" y1="-25.4" x2="127" y2="-25.4" width="0.1524" layer="91"/>
+<label x="129.54" y="-25.4" size="1.778" layer="95"/>
+</segment>
 </net>
 <net name="MOSI" class="0">
 <segment>
@@ -13182,6 +13250,11 @@ PWR   REC   CHRG  ERR   State
 <pinref part="U3" gate="U$1" pin="PB3(MOSI/OC2)"/>
 <wire x1="215.9" y1="22.86" x2="223.52" y2="22.86" width="0.1524" layer="91"/>
 <label x="215.9" y="22.86" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="U5" gate="G$1" pin="DI"/>
+<wire x1="144.78" y1="-20.32" x2="127" y2="-20.32" width="0.1524" layer="91"/>
+<label x="129.54" y="-20.32" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="FTDI3V3" class="0">
@@ -13204,56 +13277,68 @@ PWR   REC   CHRG  ERR   State
 <segment>
 <pinref part="LED_PWR" gate="G$1" pin="C"/>
 <pinref part="R6" gate="G$1" pin="2"/>
-<wire x1="215.9" y1="-7.62" x2="218.44" y2="-7.62" width="0.1524" layer="91"/>
+<wire x1="215.9" y1="-15.24" x2="218.44" y2="-15.24" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$3" class="0">
 <segment>
 <pinref part="LED_REC" gate="G$1" pin="C"/>
 <pinref part="R7" gate="G$1" pin="2"/>
-<wire x1="215.9" y1="-17.78" x2="218.44" y2="-17.78" width="0.1524" layer="91"/>
+<wire x1="215.9" y1="-25.4" x2="218.44" y2="-25.4" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$4" class="0">
 <segment>
 <pinref part="LED_CHRG" gate="G$1" pin="C"/>
 <pinref part="R8" gate="G$1" pin="2"/>
-<wire x1="215.9" y1="-27.94" x2="218.44" y2="-27.94" width="0.1524" layer="91"/>
+<wire x1="215.9" y1="-35.56" x2="218.44" y2="-35.56" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$5" class="0">
 <segment>
 <pinref part="LED_ERR" gate="G$1" pin="C"/>
 <pinref part="R9" gate="G$1" pin="2"/>
-<wire x1="215.9" y1="-38.1" x2="218.44" y2="-38.1" width="0.1524" layer="91"/>
+<wire x1="215.9" y1="-45.72" x2="218.44" y2="-45.72" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$6" class="0">
 <segment>
 <pinref part="LED_ERR" gate="G$1" pin="A"/>
-<wire x1="208.28" y1="-38.1" x2="187.96" y2="-38.1" width="0.1524" layer="91"/>
-<label x="190.5" y="-38.1" size="1.778" layer="95"/>
+<wire x1="208.28" y1="-45.72" x2="187.96" y2="-45.72" width="0.1524" layer="91"/>
+<label x="190.5" y="-45.72" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="N$7" class="0">
 <segment>
 <pinref part="LED_CHRG" gate="G$1" pin="A"/>
-<wire x1="187.96" y1="-27.94" x2="208.28" y2="-27.94" width="0.1524" layer="91"/>
-<label x="190.5" y="-27.94" size="1.778" layer="95"/>
+<wire x1="187.96" y1="-35.56" x2="208.28" y2="-35.56" width="0.1524" layer="91"/>
+<label x="190.5" y="-35.56" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="N$8" class="0">
 <segment>
 <pinref part="LED_REC" gate="G$1" pin="A"/>
-<wire x1="208.28" y1="-17.78" x2="187.96" y2="-17.78" width="0.1524" layer="91"/>
-<label x="190.5" y="-17.78" size="1.778" layer="95"/>
+<wire x1="208.28" y1="-25.4" x2="187.96" y2="-25.4" width="0.1524" layer="91"/>
+<label x="190.5" y="-25.4" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="N$9" class="0">
 <segment>
 <pinref part="LED_PWR" gate="G$1" pin="A"/>
-<wire x1="187.96" y1="-7.62" x2="208.28" y2="-7.62" width="0.1524" layer="91"/>
-<label x="190.5" y="-7.62" size="1.778" layer="95"/>
+<wire x1="187.96" y1="-15.24" x2="208.28" y2="-15.24" width="0.1524" layer="91"/>
+<label x="190.5" y="-15.24" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="CS" class="0">
+<segment>
+<pinref part="U5" gate="G$1" pin="CS"/>
+<wire x1="144.78" y1="-17.78" x2="127" y2="-17.78" width="0.1524" layer="91"/>
+<label x="129.54" y="-17.78" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="U3" gate="U$1" pin="PB2(SS/OC1B)"/>
+<wire x1="215.9" y1="25.4" x2="223.52" y2="25.4" width="0.1524" layer="91"/>
+<label x="215.9" y="25.4" size="1.778" layer="95"/>
 </segment>
 </net>
 </nets>
